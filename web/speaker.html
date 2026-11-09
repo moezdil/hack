@@ -97,7 +97,11 @@ document.getElementById("copy").onclick = async () => {
 };
 const tokenEl = document.getElementById("token");
 const srcEl = document.getElementById("srclang");
-srcEl.value = localStorage.getItem("srclang") || "en-US";
+// Default to the device's language when Chrome offers it; the speaker can change it before Start.
+const device = navigator.language || "en-US";
+const offered = [...srcEl.options].map(o => o.value);
+const guess = offered.find(v => v === device) || offered.find(v => v.slice(0, 2) === device.slice(0, 2)) || "en-US";
+srcEl.value = localStorage.getItem("srclang") || guess;
 srcEl.onchange = () => localStorage.setItem("srclang", srcEl.value);
 tokenEl.value = sessionStorage.getItem("token") || "";
 const statusText = document.getElementById("statusText");
