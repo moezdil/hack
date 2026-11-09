@@ -3,12 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23e8472b%27/%3E%3Ctext x=%2732%27 y=%2744%27 text-anchor=%27middle%27 font-family=%27Georgia,serif%27 font-weight=%27700%27 font-size=%2736%27 fill=%27%23fff7e6%27%3Er%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#fff7e6">
 <title>Readalong</title>
 <style>
   :root { --fg: #1c1a17; --bg: #fff7e6; --muted: #5e574d; --line: #1c1a17; --accent: #e8472b; --soft: #ffe3b3; --size: 24px; }
   body.contrast { --fg: #ffffff; --bg: #000000; --muted: #e6e6e6; --line: #ffffff; --accent: #ffd166; --soft: #1f1f1f; }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; min-width: 0; }
+  html, body { overflow-x: hidden; }
   body { font: var(--size)/1.5 "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0; color: var(--fg); background: var(--bg); }
   header { position: sticky; top: 0; z-index: 1; background: var(--bg); border-bottom: 2px solid var(--line);
            padding: .6rem .9rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: 16px; }
@@ -18,12 +20,16 @@
                   color: var(--fg); background: var(--bg); border: 2px solid var(--line); cursor: pointer; }
   header button[aria-pressed="true"] { background: var(--soft); }
   header button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  #badge { margin-left: auto; font: 700 14px ui-monospace, Menlo, Consolas, monospace; padding: .35rem .7rem; border-radius: 999px; border: 2px solid var(--line); background: var(--soft); color: var(--fg); }
+  #badge { flex: 1 1 100%; text-align: center; font: 700 14px ui-monospace, Menlo, Consolas, monospace; padding: .35rem .7rem; border-radius: 999px; border: 2px solid var(--line); background: var(--soft); color: var(--fg); }
+  @media (min-width: 640px) { #badge { flex: 0 0 auto; margin-left: auto; } }
+  #finals p, #interim, .empty { overflow-wrap: anywhere; }
   main { padding: 1.2rem 1rem 6rem; max-width: 50rem; margin: 0 auto; }
   #finals p { margin: 0 0 .9rem; font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
   #interim { color: var(--muted); font-style: italic; min-height: 1.5em; }
   .empty { color: var(--muted); font-size: .85em; font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; }
   .nudge { position: fixed; left: 0; right: 0; bottom: 0; padding: .6rem 1rem; font: 14px ui-monospace, Menlo, Consolas, monospace; color: var(--fg); background: var(--bg); border-top: 2px solid var(--line); display: flex; gap: .8rem; align-items: center; justify-content: space-between; }
+  .nudge span { flex: 1 1 auto; overflow-wrap: anywhere; }
+  .nudge button { flex: 0 0 auto; }
   .nudge button { font: 600 14px "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; min-height: 2.4rem; padding: .3rem .8rem; border-radius: .6rem; color: var(--bg); background: var(--fg); border: 2px solid var(--fg); cursor: pointer; }
 </style>
 </head>
@@ -44,8 +50,8 @@
   <span id="badge" role="status">connecting</span>
 </header>
 <main>
-  <form id="search" hidden style="display:flex;gap:.5rem;margin:0 0 1rem">
-    <input id="q" type="search" placeholder="Search what was said" aria-label="Search the transcript" style="flex:1;font:inherit;font-size:16px;padding:.5rem .8rem;border:2px solid var(--line);border-radius:.7rem;background:var(--bg);color:var(--fg)">
+  <form id="search" hidden style="display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1rem">
+    <input id="q" type="search" placeholder="Search what was said" aria-label="Search the transcript" style="flex:1 1 12rem;min-width:0;font:inherit;font-size:16px;padding:.5rem .8rem;border:2px solid var(--line);border-radius:.7rem;background:var(--bg);color:var(--fg)">
     <button type="submit" style="font:600 16px 'Avenir Next','Helvetica Neue',Helvetica,Arial,sans-serif;padding:.4rem .9rem;border-radius:.7rem;border:2px solid var(--line);background:var(--soft);color:var(--fg)">Find</button>
   </form>
   <div id="hits" aria-live="polite" style="font-size:.85em;margin-bottom:1rem"></div>
