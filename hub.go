@@ -9,6 +9,7 @@ type caption struct {
 	Final    bool   `json:"final"`
 	SpokenAt int64  `json:"spokenAt"`
 	Save     bool   `json:"save,omitempty"` // speaker opted in to a searchable transcript
+	Lang     string `json:"lang,omitempty"` // set on translated finals; empty means the original
 }
 
 const (
@@ -18,7 +19,7 @@ const (
 
 type room struct {
 	finals    []caption
-	listeners map[chan caption]struct{}
+	listeners map[chan caption]string // channel -> language wanted ("" = original only)
 }
 
 // hub fans captions out to listeners, per room, in memory.
@@ -33,19 +34,20 @@ func newHub() *hub { return &hub{rooms: map[string]*room{}} }
 func (h *hub) room(name string) *room {
 	r := h.rooms[name]
 	if r == nil {
-		r = &room{listeners: map[chan caption]struct{}{}}
+		r = &room{listeners: map[chan caption]string{}}
 		h.rooms[name] = r
 	}
 	return r
 }
 
 // subscribe returns the listener's channel, a copy of the recent finals, and a func to leave.
-func (h *hub) subscribe(name string) (<-chan caption, []caption, func()) {
+// lang is the translation the listener wants on top of the original ("" for none).
+func (h *hub) subscribe(name, lang string) (<-chan caption, []caption, func()) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	r := h.room(name)
 	ch := make(chan caption, listenerBuf)
-	r.listeners[ch] = struct{}{}
+	r.listeners[ch] = lang
 	backlog := append([]caption(nil), r.finals...)
 	leave := func() {
 		h.mu.Lock()
@@ -60,17 +62,21 @@ func (h *hub) subscribe(name string) (<-chan caption, []caption, func()) {
 
 // publish never blocks. A full listener loses an interim update (the next one replaces it anyway);
 // for a final, its oldest queued update is evicted to make room.
+// A translated caption (c.Lang != "") goes only to listeners who asked for that language.
 func (h *hub) publish(name string, c caption) (listeners, dropped int) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	r := h.room(name)
-	if c.Final {
+	if c.Final && c.Lang == "" {
 		r.finals = append(r.finals, c)
 		if len(r.finals) > backlogSize {
 			r.finals = r.finals[len(r.finals)-backlogSize:]
 		}
 	}
-	for ch := range r.listeners {
+	for ch, want := range r.listeners {
+		if c.Lang != "" && want != c.Lang {
+			continue
+		}
 		select {
 		case ch <- c:
 			continue
@@ -90,6 +96,23 @@ func (h *hub) publish(name string, c caption) (listeners, dropped int) {
 		}
 	}
 	return len(r.listeners), dropped
+}
+
+// langs returns the distinct translation languages listeners of a room currently want.
+func (h *hub) langs(name string) []string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	seen := map[string]bool{}
+	var out []string
+	if r := h.rooms[name]; r != nil {
+		for _, l := range r.listeners {
+			if l != "" && !seen[l] {
+				seen[l] = true
+				out = append(out, l)
+			}
+		}
+	}
+	return out
 }
 
 func (h *hub) counts() map[string]int {

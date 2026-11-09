@@ -14,9 +14,9 @@ import (
 
 func TestSlowListenerDoesNotBlock(t *testing.T) {
 	h := newHub()
-	slow, _, leaveSlow := h.subscribe("r") // never read
+	slow, _, leaveSlow := h.subscribe("r", "") // never read
 	defer leaveSlow()
-	fast, _, leaveFast := h.subscribe("r")
+	fast, _, leaveFast := h.subscribe("r", "")
 	defer leaveFast()
 
 	done := make(chan struct{})
@@ -53,7 +53,7 @@ func TestBacklogKeepsLastFinals(t *testing.T) {
 		h.publish("r", caption{Seq: i, Final: true})
 	}
 	h.publish("r", caption{Seq: 999, Final: false})
-	_, backlog, leave := h.subscribe("r")
+	_, backlog, leave := h.subscribe("r", "")
 	defer leave()
 	if len(backlog) != backlogSize || backlog[0].Seq != 10 {
 		t.Fatalf("backlog len %d first %d, want %d first 10", len(backlog), backlog[0].Seq, backlogSize)
@@ -224,5 +224,74 @@ func TestSearch(t *testing.T) {
 	json.NewDecoder(res.Body).Decode(&out)
 	if len(out.Hits) != 1 || out.Hits[0].Text != "kubelet restarts" {
 		t.Fatalf("hits %+v", out.Hits)
+	}
+}
+
+func TestTranslationGoesOnlyToListenersWhoAskedForIt(t *testing.T) {
+	openai := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			Messages []struct{ Content string } `json:"messages"`
+		}
+		json.NewDecoder(r.Body).Decode(&req)
+		w.Write([]byte(`{"choices":[{"message":{"content":"TR: ` + req.Messages[1].Content + `"}}],"usage":{"prompt_tokens":10,"completion_tokens":5}}`))
+	}))
+	defer openai.Close()
+	s := newServer("t")
+	s.trans = &translator{url: openai.URL, key: "k", model: "m", client: openai.Client(), tel: s.tel}
+	s.trans.cost, _ = s.tel.meter.Float64Counter("llm.cost.usd")
+	ts := httptest.NewServer(s.routes())
+	defer ts.Close()
+
+	read := func(path string) (*bufio.Reader, func()) {
+		res, err := http.Get(ts.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		r := bufio.NewReader(res.Body)
+		r.ReadString('\n') // event: backlog
+		r.ReadString('\n') // data
+		r.ReadString('\n')
+		return r, func() { res.Body.Close() }
+	}
+	tr, closeTr := read("/api/rooms/r/stream?lang=tr")
+	defer closeTr()
+	en, closeEn := read("/api/rooms/r/stream")
+	defer closeEn()
+	waitFor(t, func() bool { return s.hub.count("r") == 2 })
+
+	req, _ := http.NewRequest("POST", ts.URL+"/api/rooms/r/captions", strings.NewReader(`{"seq":7,"text":"hello","final":true}`))
+	req.Header.Set("Authorization", "Bearer t")
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	next := func(r *bufio.Reader) string { // one SSE frame: lines up to the blank separator
+		var b strings.Builder
+		for {
+			l, err := r.ReadString('\n')
+			if err != nil {
+				t.Fatal(err)
+			}
+			if l == "\n" && b.Len() > 0 {
+				return b.String()
+			}
+			b.WriteString(l)
+		}
+	}
+	first := next(tr) // original
+	second := next(tr)
+	if !strings.Contains(first, `"text":"hello"`) || !strings.Contains(second, `"text":"TR: hello"`) || !strings.Contains(second, `"lang":"tr"`) {
+		t.Fatalf("tr listener got\n%s\n%s", first, second)
+	}
+	got := next(en)
+	if !strings.Contains(got, `"text":"hello"`) {
+		t.Fatalf("en listener got %s", got)
+	}
+	// The plain listener must not receive the translation: nothing more should be queued.
+	time.Sleep(100 * time.Millisecond)
+	if n := len(s.hub.rooms["r"].finals); n != 1 {
+		t.Fatalf("translations must not enter the backlog, got %d finals", n)
 	}
 }
