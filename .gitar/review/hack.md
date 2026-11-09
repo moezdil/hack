@@ -4,6 +4,8 @@
 - Never log or persist caption text or audio, and never put them into spans, metrics or logs. Only lengths and counts.
 - No secrets in the repo, manifests or CI. `SPEAKER_TOKEN`, the Dash0 token and API keys come from env or k8s secrets.
 
+- Caption text may leave the server only to Elasticsearch, only for final captions, and only when the speaker's opt-in (`save: true`) is set on that caption.
+
 ## Reliability
 - Every outbound call (OpenAI, anything else) has a context timeout, its own span and a recorded error.
 - SSE handlers return when the request context is cancelled. No goroutine may outlive its listener.
