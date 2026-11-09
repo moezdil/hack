@@ -1,0 +1,14 @@
+# The platform routes https://hack.cnh.radarhq.io to Service app, port 80.
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  labels:
+    app: app
+spec:
+  selector:
+    app: app
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
