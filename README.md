@@ -14,15 +14,15 @@ Most sessions have no captions. Deaf and hard-of-hearing attendees, non-native s
 
 - Captions on their own phone, from a QR code on the slide. No install, no sign-up.
 - **A+ / A−** text size, **high contrast** mode, screen-reader friendly (`aria-live`).
-- **Translation**: the speaker talks in any of 12 languages; listeners pick theirs, finished lines arrive translated.
+- **Translation**: the speaker talks in any of 12 languages; each listener reads in their own (phone language by default). With a language chosen, only translated lines are shown.
 - **Search what was said**, by meaning, when the speaker allows it.
 - A badge that says how far behind the captions are. Honest about delay.
 - **Share** the link with the person next to you.
 
 ## Use it in three steps
 
-1. Speaker opens `/s/<room>` in Chrome, pastes the speaker token, picks the language they speak, presses **Start captions**.
-2. Listeners scan the QR on the slide or open `/r/<room>`.
+1. Speaker opens `/s/<room>` in Chrome, pastes the speaker token, checks the language they speak (preselected from the device), presses **Start captions**.
+2. Listeners scan the QR on the slide or open `/r/<room>`. Captions come in the phone's language; the list offers 12 plus the original.
 3. Talk. That's it.
 
 QR for a room: `qrencode -o qr.png https://hack.cnh.radarhq.io/r/<room>`
