@@ -16,7 +16,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      # The Go steps need at least one package; the bootstrap PR has none yet.
       - name: gofmt
+        if: hashFiles('**/*.go') != ''
         run: test -z "$(gofmt -l .)"
-      - run: go vet ./...
-      - run: go test -race ./...
+      - if: hashFiles('**/*.go') != ''
+        run: go vet ./...
+      - if: hashFiles('**/*.go') != ''
+        run: go test -race ./...
