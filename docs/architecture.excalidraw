@@ -168,10 +168,10 @@
   {
    "id": "b4",
    "type": "rectangle",
-   "x": 460,
+   "x": 880,
    "y": 250,
    "width": 260,
-   "height": 90,
+   "height": 80,
    "strokeColor": "#1e1e1e",
    "backgroundColor": "#ffe3e3",
    "fillStyle": "solid",
@@ -196,10 +196,10 @@
   {
    "id": "t4",
    "type": "text",
-   "x": 470,
+   "x": 890,
    "y": 260,
    "width": 240,
-   "height": 70,
+   "height": 60,
    "text": "OpenAI API\ntranslation per language",
    "originalText": "OpenAI API\ntranslation per language",
    "fontSize": 15,
@@ -223,9 +223,9 @@
    "id": "b5",
    "type": "rectangle",
    "x": 880,
-   "y": 250,
+   "y": 370,
    "width": 260,
-   "height": 90,
+   "height": 80,
    "strokeColor": "#1e1e1e",
    "backgroundColor": "#fff0b8",
    "fillStyle": "solid",
@@ -251,9 +251,9 @@
    "id": "t5",
    "type": "text",
    "x": 890,
-   "y": 260,
+   "y": 380,
    "width": 240,
-   "height": 70,
+   "height": 60,
    "text": "Elasticsearch\nsemantic search, opt-in",
    "originalText": "Elasticsearch\nsemantic search, opt-in",
    "fontSize": 15,
@@ -276,8 +276,8 @@
   {
    "id": "b6",
    "type": "rectangle",
-   "x": 460,
-   "y": 400,
+   "x": 40,
+   "y": 250,
    "width": 260,
    "height": 90,
    "strokeColor": "#1e1e1e",
@@ -304,8 +304,8 @@
   {
    "id": "t6",
    "type": "text",
-   "x": 470,
-   "y": 410,
+   "x": 50,
+   "y": 260,
    "width": 240,
    "height": 70,
    "text": "Dash0\ntraces, metrics, logs, Agent0",
@@ -331,7 +331,7 @@
    "id": "b7",
    "type": "rectangle",
    "x": 40,
-   "y": 400,
+   "y": 410,
    "width": 260,
    "height": 90,
    "strokeColor": "#1e1e1e",
@@ -359,7 +359,7 @@
    "id": "t7",
    "type": "text",
    "x": 50,
-   "y": 410,
+   "y": 420,
    "width": 240,
    "height": 70,
    "text": "GitHub\nPR -> Gitar review -> CI -> image",
@@ -384,8 +384,8 @@
   {
    "id": "b8",
    "type": "rectangle",
-   "x": 880,
-   "y": 400,
+   "x": 460,
+   "y": 410,
    "width": 260,
    "height": 90,
    "strokeColor": "#1e1e1e",
@@ -412,8 +412,8 @@
   {
    "id": "t8",
    "type": "text",
-   "x": 890,
-   "y": 410,
+   "x": 470,
+   "y": 420,
    "width": 240,
    "height": 70,
    "text": "Argo CD + Radar\ndeploy on push, AI SRE",
@@ -582,12 +582,12 @@
   {
    "id": "t14",
    "type": "text",
-   "x": 590,
-   "y": 186,
+   "x": 720,
+   "y": 156,
    "width": 160,
    "height": 20,
-   "text": "finals",
-   "originalText": "finals",
+   "text": "finals to translate",
+   "originalText": "finals to translate",
    "fontSize": 13,
    "fontFamily": 3,
    "textAlign": "center",
@@ -607,18 +607,26 @@
   {
    "id": "a13",
    "type": "arrow",
-   "x": 590,
-   "y": 200,
-   "width": 0,
-   "height": 50,
+   "x": 720,
+   "y": 170,
+   "width": 160,
+   "height": 120,
    "points": [
     [
      0,
      0
     ],
     [
-     0,
-     50
+     80,
+     0
+    ],
+    [
+     80,
+     120
+    ],
+    [
+     160,
+     120
     ]
    ],
    "elbowed": true,
@@ -654,8 +662,8 @@
   {
    "id": "t16",
    "type": "text",
-   "x": 720,
-   "y": 281,
+   "x": 680,
+   "y": 186,
    "width": 160,
    "height": 20,
    "text": "opt-in finals",
@@ -679,18 +687,22 @@
   {
    "id": "a15",
    "type": "arrow",
-   "x": 720,
-   "y": 295,
-   "width": 160,
-   "height": 0,
+   "x": 680,
+   "y": 200,
+   "width": 200,
+   "height": 210,
    "points": [
     [
      0,
      0
     ],
     [
-     160,
-     0
+     0,
+     210
+    ],
+    [
+     200,
+     210
     ]
    ],
    "elbowed": true,
@@ -701,7 +713,7 @@
    "startArrowhead": null,
    "endArrowhead": "arrow",
    "startBinding": {
-    "elementId": "b4",
+    "elementId": "b2",
     "focus": 0,
     "gap": 4
    },
@@ -726,8 +738,8 @@
   {
    "id": "t18",
    "type": "text",
-   "x": 590,
-   "y": 326,
+   "x": 500,
+   "y": 186,
    "width": 160,
    "height": 20,
    "text": "OTLP",
@@ -751,10 +763,10 @@
   {
    "id": "a17",
    "type": "arrow",
-   "x": 590,
-   "y": 340,
-   "width": 0,
-   "height": 60,
+   "x": 500,
+   "y": 200,
+   "width": 200,
+   "height": 95,
    "points": [
     [
      0,
@@ -762,7 +774,11 @@
     ],
     [
      0,
-     60
+     95
+    ],
+    [
+     -200,
+     95
     ]
    ],
    "elbowed": true,
@@ -796,10 +812,35 @@
    ]
   },
   {
+   "id": "t20",
+   "type": "text",
+   "x": 300,
+   "y": 441,
+   "width": 160,
+   "height": 20,
+   "text": "image",
+   "originalText": "image",
+   "fontSize": 13,
+   "fontFamily": 3,
+   "textAlign": "center",
+   "verticalAlign": "middle",
+   "containerId": "a19",
+   "strokeColor": "#444444",
+   "backgroundColor": "transparent",
+   "roughness": 0,
+   "groupIds": [],
+   "opacity": 100,
+   "angle": 0,
+   "seed": 20,
+   "version": 1,
+   "isDeleted": false,
+   "lineHeight": 1.25
+  },
+  {
    "id": "a19",
    "type": "arrow",
    "x": 300,
-   "y": 445,
+   "y": 455,
    "width": 160,
    "height": 0,
    "points": [
@@ -825,7 +866,7 @@
     "gap": 4
    },
    "endBinding": {
-    "elementId": "b6",
+    "elementId": "b8",
     "focus": 0,
     "gap": 4
    },
@@ -835,55 +876,18 @@
    "seed": 19,
    "version": 1,
    "isDeleted": false,
-   "boundElements": []
-  },
-  {
-   "id": "a20",
-   "type": "arrow",
-   "x": 720,
-   "y": 445,
-   "width": 160,
-   "height": 0,
-   "points": [
-    [
-     0,
-     0
-    ],
-    [
-     160,
-     0
-    ]
-   ],
-   "elbowed": true,
-   "roundness": null,
-   "strokeColor": "#1e1e1e",
-   "strokeWidth": 2,
-   "roughness": 0,
-   "startArrowhead": null,
-   "endArrowhead": "arrow",
-   "startBinding": {
-    "elementId": "b6",
-    "focus": 0,
-    "gap": 4
-   },
-   "endBinding": {
-    "elementId": "b8",
-    "focus": 0,
-    "gap": 4
-   },
-   "groupIds": [],
-   "opacity": 100,
-   "angle": 0,
-   "seed": 20,
-   "version": 1,
-   "isDeleted": false,
-   "boundElements": []
+   "boundElements": [
+    {
+     "id": "t20",
+     "type": "text"
+    }
+   ]
   },
   {
    "id": "t22",
    "type": "text",
-   "x": 1010,
-   "y": 386,
+   "x": 590,
+   "y": 396,
    "width": 160,
    "height": 20,
    "text": "rollout",
@@ -907,10 +911,10 @@
   {
    "id": "a21",
    "type": "arrow",
-   "x": 1010,
-   "y": 400,
+   "x": 590,
+   "y": 410,
    "width": 0,
-   "height": 60,
+   "height": 210,
    "points": [
     [
      0,
@@ -918,7 +922,7 @@
     ],
     [
      0,
-     -60
+     -210
     ]
    ],
    "elbowed": true,
@@ -934,7 +938,7 @@
     "gap": 4
    },
    "endBinding": {
-    "elementId": "b5",
+    "elementId": "b2",
     "focus": 0,
     "gap": 4
    },
