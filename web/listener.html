@@ -140,9 +140,8 @@ const es = new EventSource(`/api/rooms/${room}/stream` + (lang ? `?lang=${encode
 es.addEventListener("backlog", e => {
   connected = true;
   const items = JSON.parse(e.data) || [];
-  if (items.length) finalsEl.replaceChildren();
-  for (const c of items) addFinal(c.text);
-  if (lang && items.length) { const n = document.createElement("p"); n.className = "empty"; n.textContent = "Earlier lines are shown in the original; new lines arrive translated."; finalsEl.appendChild(n); }
+  // With a language chosen, only translated lines are shown: no original backlog, no original live line.
+  if (!lang) { if (items.length) finalsEl.replaceChildren(); for (const c of items) addFinal(c.text); }
   follow();
 });
 es.addEventListener("caption", e => {
@@ -150,7 +149,8 @@ es.addEventListener("caption", e => {
   lastSpokenAt = c.spokenAt;
   // With a language chosen, finished lines arrive translated; the live line stays in the original.
   if (c.lang) { addFinal(c.text); }
-  else if (c.final) { if (!lang) addFinal(c.text); interimEl.textContent = ""; }
+  else if (lang) { /* original text is not shown when a language is chosen */ }
+  else if (c.final) { addFinal(c.text); interimEl.textContent = ""; }
   else { interimEl.textContent = c.text; }
   follow();
 });
