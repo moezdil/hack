@@ -3,23 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Live captions</title>
+<meta name="theme-color" content="#0b1020">
+<title>Readalong: live captions for every talk</title>
 <style>
-  body { font: 20px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 36rem; padding: 0 1rem; color: #111; background: #fff; }
-  input, button { font: inherit; padding: .5rem .8rem; }
-  input { width: 12rem; }
-  p.small { font-size: 16px; color: #444; }
+  :root { --bg: #0b1020; --panel: #121a33; --fg: #f3f6ff; --muted: #aab4d6; --accent: #38e8c6; --accent-ink: #052a24; --line: #26315a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 18px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background:
+         radial-gradient(1200px 600px at 80% -10%, #1b2b6b 0%, transparent 60%),
+         radial-gradient(800px 500px at -10% 110%, #0e4d45 0%, transparent 55%), var(--bg); min-height: 100vh; }
+  main { max-width: 56rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+  .brand { display: flex; align-items: center; gap: .6rem; font-weight: 700; letter-spacing: .02em; color: var(--muted); }
+  .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 .35rem rgba(56,232,198,.18); animation: pulse 2s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 .7rem rgba(56,232,198,0); } }
+  h1 { font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.05; margin: 1.2rem 0 .6rem; letter-spacing: -.02em; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lead { font-size: clamp(1.05rem, 2.4vw, 1.35rem); color: var(--muted); max-width: 38rem; margin: 0 0 2rem; }
+  form { display: grid; gap: .75rem; grid-template-columns: 1fr; background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; padding: 1.25rem; max-width: 34rem; }
+  label { font-size: .95rem; color: var(--muted); }
+  input { width: 100%; font: inherit; font-size: 1.25rem; padding: .8rem 1rem; border-radius: .7rem; border: 1px solid var(--line); background: #0d1430; color: var(--fg); }
+  input:focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .row { display: flex; gap: .75rem; flex-wrap: wrap; }
+  button { font: inherit; font-weight: 700; padding: .85rem 1.3rem; border-radius: .7rem; border: 2px solid transparent; cursor: pointer; flex: 1 1 10rem; }
+  .primary { background: var(--accent); color: var(--accent-ink); }
+  .ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin-top: 2.5rem; }
+  .pillar { background: rgba(18,26,51,.7); border: 1px solid var(--line); border-radius: 1rem; padding: 1.1rem 1.2rem; }
+  .pillar b { display: block; font-size: 1.05rem; margin-bottom: .25rem; }
+  .pillar span { color: var(--muted); font-size: .95rem; }
+  footer { margin-top: 3rem; color: var(--muted); font-size: .9rem; }
+  footer a { color: var(--accent); }
 </style>
 </head>
 <body>
-<h1>Live captions for talks</h1>
-<p>Scan the QR code on the speaker's slide, or type the room name, and read along on your phone. No account, no app, nothing stored.</p>
-<form id="f">
-  <label>Room <input id="room" pattern="[a-z0-9-]{1,32}" placeholder="talk" required autofocus></label>
-  <button type="submit">Read along</button>
-  <button type="button" id="speak">I am the speaker</button>
-</form>
-<p class="small">Listener pages let you change the text size and switch to high contrast. Speaker pages need Chrome; speech recognition runs in the browser and audio goes to Google's speech service.</p>
+<main>
+  <div class="brand"><span class="dot" aria-hidden="true"></span> readalong</div>
+  <h1>Every talk,<br><em>every ear.</em></h1>
+  <p class="lead">Live captions for conference talks. Scan the code on the speaker's slide, read along on your phone. No app, no account, nothing stored.</p>
+
+  <form id="f">
+    <label for="room">Room name (it's on the slide)</label>
+    <input id="room" pattern="[a-z0-9-]{1,32}" placeholder="talk" autocomplete="off" required autofocus>
+    <div class="row">
+      <button type="submit" class="primary">Read along</button>
+      <button type="button" class="ghost" id="speak">I'm the speaker</button>
+    </div>
+  </form>
+
+  <section class="pillars" aria-label="What you get">
+    <div class="pillar"><b>Built for every listener</b><span>Deaf and hard of hearing, non-native speakers, the back row. Big text and high contrast, one tap away.</span></div>
+    <div class="pillar"><b>Nothing to install</b><span>A link on any phone. Captions stream over the open web; the room stays on the speaker's side.</span></div>
+    <div class="pillar"><b>Honest about delay</b><span>Each phone shows how far behind it is. The same number drives the speaker's dashboard.</span></div>
+  </section>
+
+  <footer>Speakers need Chrome: speech recognition runs in the browser and audio goes to Google's speech service. Open source on <a href="https://github.com/moezdil/hack">GitHub</a>.</footer>
+</main>
 <script>
 const room = () => document.getElementById("room").value.trim();
 document.getElementById("f").onsubmit = e => { e.preventDefault(); location.href = "/r/" + room(); };
