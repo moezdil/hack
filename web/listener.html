@@ -41,7 +41,7 @@
   <button id="contrast" aria-pressed="false">High contrast</button>
   <button id="scroll" aria-pressed="false">Pause scroll</button>
   <select id="lang" hidden aria-label="Translate captions to" style="font:600 16px 'Avenir Next','Helvetica Neue',Helvetica,Arial,sans-serif;min-height:2.7rem;padding:.3rem .6rem;border-radius:.7rem;border:2px solid var(--line);background:var(--bg);color:var(--fg)">
-    <option value="">Original (English)</option>
+    <option value="">Original (as spoken)</option>
     <option value="tr">Türkçe</option><option value="de">Deutsch</option><option value="es">Español</option>
     <option value="fr">Français</option><option value="pt">Português</option><option value="it">Italiano</option>
     <option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option>
@@ -129,7 +129,9 @@ searchForm.onsubmit = async e => {
 };
 
 const langSel = document.getElementById("lang");
-const lang = localStorage.getItem("lang") || "";
+const stored = localStorage.getItem("lang");
+const phone = (navigator.language || "").slice(0, 2).toLowerCase();
+const lang = stored !== null ? stored : ([...langSel.options].some(o => o.value === phone) ? phone : "");
 langSel.value = lang;
 langSel.onchange = () => { localStorage.setItem("lang", langSel.value); location.reload(); };
 fetch(`/api/rooms/${room}/search`).then(r => r.json()).then(j => { if (j.translate) langSel.hidden = false; }).catch(() => {});
