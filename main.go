@@ -36,6 +36,11 @@ func (s *server) routes() *http.ServeMux {
 	mux.HandleFunc("GET /api/rooms/{room}/stream", s.stream)
 	mux.HandleFunc("GET /s/{room}", s.page("web/speaker.html"))
 	mux.HandleFunc("GET /r/{room}", s.page("web/listener.html"))
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, _ *http.Request) {
+		b, _ := webFS.ReadFile("web/index.html")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(b)
+	})
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) { w.Write([]byte("ok")) })
 	mux.HandleFunc("GET /readyz", func(w http.ResponseWriter, _ *http.Request) {
 		select {

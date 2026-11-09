@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live captions</title>
+<style>
+  body { font: 20px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 36rem; padding: 0 1rem; color: #111; background: #fff; }
+  input, button { font: inherit; padding: .5rem .8rem; }
+  input { width: 12rem; }
+  p.small { font-size: 16px; color: #444; }
+</style>
+</head>
+<body>
+<h1>Live captions for talks</h1>
+<p>Scan the QR code on the speaker's slide, or type the room name, and read along on your phone. No account, no app, nothing stored.</p>
+<form id="f">
+  <label>Room <input id="room" pattern="[a-z0-9-]{1,32}" placeholder="talk" required autofocus></label>
+  <button type="submit">Read along</button>
+  <button type="button" id="speak">I am the speaker</button>
+</form>
+<p class="small">Listener pages let you change the text size and switch to high contrast. Speaker pages need Chrome; speech recognition runs in the browser and audio goes to Google's speech service.</p>
+<script>
+const room = () => document.getElementById("room").value.trim();
+document.getElementById("f").onsubmit = e => { e.preventDefault(); location.href = "/r/" + room(); };
+document.getElementById("speak").onclick = () => { if (room()) location.href = "/s/" + room(); };
+</script>
+</body>
+</html>
