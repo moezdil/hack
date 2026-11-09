@@ -91,6 +91,16 @@ func (h *hub) publish(name string, c caption) (listeners, dropped int) {
 	return len(r.listeners), dropped
 }
 
+func (h *hub) counts() map[string]int {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	m := make(map[string]int, len(h.rooms))
+	for name, r := range h.rooms {
+		m[name] = len(r.listeners)
+	}
+	return m
+}
+
 func (h *hub) count(name string) int {
 	h.mu.Lock()
 	defer h.mu.Unlock()

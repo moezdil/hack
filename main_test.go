@@ -59,7 +59,7 @@ func TestBacklogKeepsLastFinals(t *testing.T) {
 }
 
 func TestStreamCancelRemovesListener(t *testing.T) {
-	s := &server{hub: newHub(), token: "t", closing: make(chan struct{})}
+	s := newServer("t")
 	ts := httptest.NewServer(s.routes())
 	defer ts.Close()
 
@@ -87,7 +87,7 @@ func TestStreamCancelRemovesListener(t *testing.T) {
 }
 
 func TestShutdownSendsBye(t *testing.T) {
-	s := &server{hub: newHub(), token: "t", closing: make(chan struct{})}
+	s := newServer("t")
 	ts := httptest.NewServer(s.routes())
 	defer ts.Close()
 	res, err := http.Get(ts.URL + "/api/rooms/r/stream")
@@ -105,7 +105,7 @@ func TestShutdownSendsBye(t *testing.T) {
 }
 
 func TestPostCaptionValidation(t *testing.T) {
-	s := &server{hub: newHub(), token: "secret", closing: make(chan struct{})}
+	s := newServer("secret")
 	ts := httptest.NewServer(s.routes())
 	defer ts.Close()
 

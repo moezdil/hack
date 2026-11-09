@@ -15,6 +15,11 @@ import (
 	"syscall"
 	"time"
 	"unicode/utf8"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 //go:embed web
@@ -26,6 +31,7 @@ const maxText = 500
 
 type server struct {
 	hub     *hub
+	tel     *telemetry
 	token   string
 	closing chan struct{} // closed on shutdown: streams send "bye" and return
 }
@@ -71,27 +77,43 @@ func (s *server) authorized(r *http.Request) bool {
 }
 
 func (s *server) postCaption(w http.ResponseWriter, r *http.Request) {
-	if !s.authorized(r) {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
 	room := r.PathValue("room")
-	if !roomRe.MatchString(room) {
-		http.Error(w, "bad room", http.StatusBadRequest)
+	ctx, span := s.tel.tracer.Start(r.Context(), "caption.ingest", trace.WithAttributes(attribute.String("room", room)))
+	defer span.End()
+	var c caption
+	reject := func(status int, reason string) {
+		span.SetStatus(codes.Error, reason)
+		s.tel.captions.Add(ctx, 1, metric.WithAttributes(attribute.String("status", reason)))
+		http.Error(w, reason, status)
+	}
+	if !s.authorized(r) {
+		reject(http.StatusUnauthorized, "unauthorized")
 		return
 	}
-	var c caption
+	if !roomRe.MatchString(room) {
+		reject(http.StatusBadRequest, "bad room")
+		return
+	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&c); err != nil {
-		http.Error(w, "bad body", http.StatusBadRequest)
+		reject(http.StatusBadRequest, "bad body")
 		return
 	}
 	if utf8.RuneCountInString(c.Text) > maxText {
-		http.Error(w, "text too long", http.StatusBadRequest)
+		reject(http.StatusBadRequest, "text too long")
 		return
 	}
+	// Never the caption text itself in telemetry, only its length.
+	span.SetAttributes(attribute.Int("seq", c.Seq), attribute.Bool("final", c.Final), attribute.Int("text.length", len(c.Text)))
+	s.tel.recordDelay(ctx, room, "received", time.Now().UnixMilli()-c.SpokenAt)
+
+	_, bspan := s.tel.tracer.Start(ctx, "caption.broadcast")
 	listeners, dropped := s.hub.publish(room, c)
-	slog.Info("caption", "room", room, "seq", c.Seq, "final", c.Final, "len", len(c.Text),
-		"listeners", listeners, "dropped", dropped, "receivedDelayMs", time.Now().UnixMilli()-c.SpokenAt)
+	bspan.SetAttributes(attribute.Int("listeners", listeners), attribute.Int("dropped", dropped))
+	bspan.End()
+
+	s.tel.captions.Add(ctx, 1, metric.WithAttributes(attribute.Bool("final", c.Final), attribute.String("status", "ok")))
+	slog.InfoContext(ctx, "caption", "room", room, "seq", c.Seq, "final", c.Final, "len", len(c.Text),
+		"listeners", listeners, "dropped", dropped)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]int{"listeners": listeners})
 }
@@ -120,6 +142,10 @@ func (s *server) stream(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 	}
 	send("backlog", backlog)
+	// EventSource sends Last-Event-ID only when it reconnects after a drop.
+	if r.Header.Get("Last-Event-ID") != "" {
+		s.tel.reconnects.Add(r.Context(), 1, metric.WithAttributes(attribute.String("room", room)))
+	}
 
 	ping := time.NewTicker(15 * time.Second)
 	defer ping.Stop()
@@ -134,7 +160,9 @@ func (s *server) stream(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, ": ping\n\n")
 			flusher.Flush()
 		case c := <-ch:
+			fmt.Fprintf(w, "id: %d\n", c.Seq)
 			send("caption", c)
+			s.tel.recordDelay(r.Context(), room, "sent", time.Now().UnixMilli()-c.SpokenAt)
 		}
 	}
 }
@@ -145,12 +173,17 @@ func main() {
 		slog.Error("SPEAKER_TOKEN is required")
 		os.Exit(1)
 	}
-	addr := ":" + envOr("PORT", "8080")
-	s := &server{hub: newHub(), token: token, closing: make(chan struct{})}
-	srv := &http.Server{Addr: addr, Handler: s.routes(), ReadHeaderTimeout: 10 * time.Second}
-
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	shutdownTel, err := setupTelemetry(ctx)
+	if err != nil {
+		slog.Error("telemetry", "err", err)
+		os.Exit(1)
+	}
+	addr := ":" + envOr("PORT", "8080")
+	s := newServer(token)
+	srv := &http.Server{Addr: addr, Handler: s.routes(), ReadHeaderTimeout: 10 * time.Second}
+
 	go func() {
 		slog.Info("listening", "addr", addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -166,6 +199,14 @@ func main() {
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("shutdown", "err", err)
 	}
+	if err := shutdownTel(shutdownCtx); err != nil {
+		slog.Error("telemetry shutdown", "err", err)
+	}
+}
+
+func newServer(token string) *server {
+	h := newHub()
+	return &server{hub: h, tel: newTelemetry(h), token: token, closing: make(chan struct{})}
 }
 
 func envOr(k, def string) string {
