@@ -10,4 +10,4 @@ resources:
 images:
   - name: app
     newName: ghcr.io/moezdil/hack
-    newTag: a4712ad
+    newTag: "4521894"
