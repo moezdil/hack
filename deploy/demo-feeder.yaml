@@ -1,0 +1,46 @@
+# Keeps room "demo" alive all day so the live link, Dash0 and Radar always
+# have fresh traffic: one caption per minute from inside the cluster.
+# Uses the same Secret as the app, nothing is committed.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: demo-feeder
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 50
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: feeder
+              image: curlimages/curl:8.11.1
+              env:
+                - name: SPEAKER_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: hack
+                      key: SPEAKER_TOKEN
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  now=$(date +%s)000
+                  lines='Readalong demo room: live captions for every talk.|Scan the QR on the slide and read along on your phone.|No app, no account, nothing is stored.|Tap A plus for bigger text or switch to high contrast.|Captions stream over SSE from a tiny Go service on Kubernetes.'
+                  n=$(( $(date +%M) % 5 + 1 ))
+                  text=$(printf '%s' "$lines" | cut -d'|' -f$n)
+                  curl -fsS -m 10 -X POST "http://app/api/rooms/demo/captions" \
+                    -H "Authorization: Bearer $SPEAKER_TOKEN" -H "Content-Type: application/json" \
+                    -d "{\"seq\":$(date +%s),\"text\":\"$text\",\"final\":true,\"spokenAt\":$now}"
+              resources:
+                requests: {cpu: 10m, memory: 16Mi}
+                limits: {cpu: 100m, memory: 64Mi}
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                seccompProfile: {type: RuntimeDefault}
+                capabilities: {drop: ["ALL"]}
