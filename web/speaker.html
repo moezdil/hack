@@ -3,74 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b1020">
-<title>Speaker: live captions</title>
+<meta name="theme-color" content="#1c1a17">
+<title>Speaker: Readalong</title>
 <style>
-  :root { --bg: #0b1020; --panel: #121a33; --fg: #f3f6ff; --muted: #aab4d6; --accent: #38e8c6; --accent-ink: #052a24; --line: #26315a; --warn: #ffd166; }
+  :root { --ink: #1c1a17; --paper: #fff7e6; --coral: #e8472b; --mustard: #f5b301; --mint: #7fe3c0; --sky: #6ea8ff; --mute: #b8b0a3; --panel: #27241f; }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 18px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background:
-         radial-gradient(900px 500px at 90% -10%, #1b2b6b 0%, transparent 60%), var(--bg); min-height: 100vh; }
-  main { max-width: 44rem; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
-  .brand { font-weight: 700; color: var(--muted); letter-spacing: .02em; }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: .4rem 0 1.2rem; letter-spacing: -.01em; }
-  h1 em { font-style: normal; color: var(--accent); }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem; }
-  label { display: block; font-size: .95rem; color: var(--muted); margin-bottom: .4rem; }
-  input { width: 100%; font: inherit; font-size: 1.15rem; padding: .75rem 1rem; border-radius: .7rem; border: 1px solid var(--line); background: #0d1430; color: var(--fg); }
-  input:focus, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .row { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1rem; }
-  button { font: inherit; font-weight: 700; padding: .85rem 1.3rem; border-radius: .7rem; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; flex: 1 1 8rem; }
-  button:disabled { opacity: .45; cursor: default; }
-  #start { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
-  #status { display: flex; align-items: center; gap: .6rem; font-weight: 600; margin: 0; }
-  .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--muted); flex: none; }
-  .live .dot { background: var(--accent); box-shadow: 0 0 0 .35rem rgba(56,232,198,.2); animation: pulse 1.6s infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 .7rem rgba(56,232,198,0); } }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: .75rem; margin-top: 1rem; }
-  .stat { background: #0d1430; border: 1px solid var(--line); border-radius: .8rem; padding: .8rem 1rem; }
-  .stat b { display: block; font-size: 1.8rem; line-height: 1.1; }
-  .stat span { color: var(--muted); font-size: .9rem; }
-  #last { min-height: 3.2rem; font-size: 1.25rem; color: var(--fg); }
-  .hint { color: var(--muted); font-size: .9rem; margin: 0; }
-  .hint a { color: var(--accent); }
+  body { margin: 0; color: var(--paper); background: var(--ink); font: 18px/1.5 "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+  .logo { font: 700 1.3rem/1 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+  .logo span { color: var(--coral); }
+  h1 { font: 800 clamp(1.8rem, 5vw, 2.8rem)/1.05 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; letter-spacing: -.02em; margin: 1rem 0 1.2rem; }
+  h1 mark { background: linear-gradient(transparent 60%, var(--mustard) 60%); color: inherit; }
+  .card { background: var(--panel); border: 2px solid #3a362f; border-radius: 1.2rem; padding: 1.3rem; margin-bottom: 1rem; }
+  label { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; color: var(--mute); margin-bottom: .4rem; }
+  input { width: 100%; font: inherit; font-size: 1.15rem; padding: .8rem 1rem; border-radius: .8rem; border: 2px solid #3a362f; background: #15130f; color: var(--paper); }
+  input:focus, button:focus-visible, a:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+  .row { display: flex; gap: .8rem; flex-wrap: wrap; margin-top: 1rem; }
+  button { font: 700 1.05rem "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; padding: .9rem 1.2rem; border-radius: .8rem; border: 2px solid var(--paper); background: transparent; color: var(--paper); cursor: pointer; flex: 1 1 8rem; }
+  button:disabled { opacity: .4; cursor: default; }
+  #start { background: var(--coral); border-color: var(--coral); color: #fff; }
+  #status { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1rem; }
+  .dot { width: .8rem; height: .8rem; border-radius: 50%; background: var(--mute); flex: none; }
+  .live .dot { background: var(--mint); box-shadow: 0 0 0 .35rem rgba(127,227,192,.25); animation: pulse 1.4s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 .8rem rgba(127,227,192,0); } }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: .8rem; margin-top: 1rem; }
+  .stat { background: #15130f; border: 2px solid #3a362f; border-radius: .9rem; padding: .8rem 1rem; }
+  .stat b { display: block; font: 800 2.2rem/1.1 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; color: var(--mustard); }
+  .stat span { color: var(--mute); font-size: .85rem; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  #last { min-height: 3.2rem; font-size: 1.3rem; font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+  .hint { color: var(--mute); font-size: .9rem; margin: .8rem 0 0; }
+  .hint a { color: var(--mint); }
+  .share { display: flex; gap: .8rem; flex-wrap: wrap; align-items: center; }
+  .share code { background: #15130f; border: 2px solid #3a362f; border-radius: .6rem; padding: .4rem .6rem; font-size: .9rem; word-break: break-all; }
+  .share button { flex: 0 0 auto; padding: .5rem .9rem; font-size: .9rem; }
+  .tip { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; color: var(--mint); }
 </style>
 </head>
 <body>
-<main>
-  <div class="brand">readalong</div>
-  <h1>Speaking in <em id="room"></em></h1>
+<div class="wrap">
+  <div class="logo">read<span>along</span></div>
+  <h1>You're on in <mark id="room"></mark></h1>
 
   <section class="card">
-    <label for="token">Speaker token</label>
+    <label for="token">speaker token</label>
     <input id="token" type="password" autocomplete="off">
     <div class="row">
       <button id="start">Start captions</button>
       <button id="pause" disabled>Pause</button>
       <button id="stop" disabled>Stop</button>
     </div>
-    <p class="hint" style="margin-top:.8rem">Pause for Q&amp;A or private moments. Chrome only: recognition runs in the browser and audio goes to Google's speech service.</p>
+    <p class="hint">Pause for Q&amp;A or private moments. Chrome only: recognition runs in the browser and audio goes to Google's speech service.</p>
   </section>
 
   <section class="card">
-    <p id="status" role="status"><span class="dot" aria-hidden="true"></span><span id="statusText">Stopped</span></p>
+    <p id="status" role="status"><span class="dot" aria-hidden="true"></span><span id="statusText">stopped</span></p>
     <div class="stats">
-      <div class="stat"><b id="listeners">0</b><span>listening now</span></div>
+      <div class="stat"><b id="listeners">0</b><span>reading along</span></div>
       <div class="stat"><b id="restarts">0</b><span>recognition restarts</span></div>
     </div>
   </section>
 
   <section class="card">
-    <label>Last caption</label>
+    <label>last caption</label>
     <div id="last" aria-live="off"></div>
   </section>
 
-  <p class="hint">Listeners open <a id="link"></a> or scan the QR on your slide.</p>
-</main>
+  <section class="card share">
+    <code id="link"></code>
+    <button id="copy" type="button">Copy link</button>
+    <p class="tip" style="flex-basis:100%;margin:.2rem 0 0">Tell the room: "scan the QR, read along on your phone". Late joiners get the last 50 lines.</p>
+  </section>
+</div>
 <script>
 const room = location.pathname.split("/")[2];
 document.getElementById("room").textContent = room;
-const link = document.getElementById("link");
-link.textContent = location.origin + "/r/" + room; link.href = "/r/" + room;
+const url = location.origin + "/r/" + room;
+document.getElementById("link").textContent = url;
+document.getElementById("copy").onclick = async () => {
+  const b = document.getElementById("copy");
+  try { await navigator.clipboard.writeText(url); b.textContent = "Copied"; } catch (e) { b.textContent = "Select and copy"; }
+  setTimeout(() => b.textContent = "Copy link", 1500);
+};
 const tokenEl = document.getElementById("token");
 tokenEl.value = sessionStorage.getItem("token") || "";
 const statusText = document.getElementById("statusText");
@@ -79,13 +92,13 @@ const lastEl = document.getElementById("last");
 const btn = id => document.getElementById(id);
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (!SR) statusText.textContent = "This browser has no speech recognition. Use Chrome.";
+if (!SR) statusText.textContent = "this browser has no speech recognition. Use Chrome.";
 
 let rec, running = false, seq = 0, listeners = 0, restarts = 0;
 
 function setState(text) {
   statusText.textContent = text;
-  statusEl.classList.toggle("live", text === "Live");
+  statusEl.classList.toggle("live", text === "live");
   btn("listeners").textContent = listeners;
   btn("restarts").textContent = restarts;
 }
@@ -97,10 +110,10 @@ async function send(text, final) {
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tokenEl.value },
       body: JSON.stringify({ seq: ++seq, text, final, spokenAt: Date.now() }),
     });
-    if (res.status === 401) { setState("Wrong token"); return; }
+    if (res.status === 401) { setState("wrong token"); return; }
     if (res.ok) { listeners = (await res.json()).listeners; btn("listeners").textContent = listeners; }
   } catch (e) {
-    setState("Network error");
+    setState("network error");
   }
 }
 
@@ -119,28 +132,28 @@ function start() {
       send(text, r.isFinal);
       if (r.isFinal) lastEl.textContent = text;
     }
-    setState("Live");
+    setState("live");
   };
-  rec.onerror = e => setState("Recognition error: " + e.error);
+  rec.onerror = e => setState("recognition error: " + e.error);
   // Chrome stops on its own after silence or about a minute; restart unless the speaker paused or stopped.
   rec.onend = () => { if (running) { restarts++; try { rec.start(); } catch (e) {} } };
   running = true;
   rec.start();
   btn("start").disabled = true; btn("pause").disabled = false; btn("stop").disabled = false;
-  setState("Live");
+  setState("live");
 }
 
 function halt(label) {
   running = false;
   if (rec) rec.stop();
-  btn("start").disabled = false; btn("pause").disabled = true; btn("stop").disabled = label === "Stopped";
-  btn("start").textContent = label === "Paused" ? "Resume" : "Start captions";
+  btn("start").disabled = false; btn("pause").disabled = true; btn("stop").disabled = label === "stopped";
+  btn("start").textContent = label === "paused" ? "Resume" : "Start captions";
   setState(label);
 }
 
 btn("start").onclick = start;
-btn("pause").onclick = () => halt("Paused");
-btn("stop").onclick = () => halt("Stopped");
+btn("pause").onclick = () => halt("paused");
+btn("stop").onclick = () => halt("stopped");
 </script>
 </body>
 </html>

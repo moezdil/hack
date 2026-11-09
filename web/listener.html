@@ -3,44 +3,50 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
-<title>Live captions</title>
+<meta name="theme-color" content="#fff7e6">
+<title>Readalong</title>
 <style>
-  :root { --fg: #0b1020; --bg: #ffffff; --muted: #4a5578; --line: #d7dcef; --accent: #0e7c6b; --accent-soft: #e4f7f2; --size: 24px; }
-  body.contrast { --fg: #ffffff; --bg: #000000; --muted: #e6e6e6; --line: #ffffff; --accent: #38e8c6; --accent-soft: #11201c; }
+  :root { --fg: #1c1a17; --bg: #fff7e6; --muted: #5e574d; --line: #1c1a17; --accent: #e8472b; --soft: #ffe3b3; --size: 24px; }
+  body.contrast { --fg: #ffffff; --bg: #000000; --muted: #e6e6e6; --line: #ffffff; --accent: #ffd166; --soft: #1f1f1f; }
   * { box-sizing: border-box; }
-  body { font: var(--size)/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; color: var(--fg); background: var(--bg); }
+  body { font: var(--size)/1.5 "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0; color: var(--fg); background: var(--bg); }
   header { position: sticky; top: 0; z-index: 1; background: var(--bg); border-bottom: 2px solid var(--line);
            padding: .6rem .9rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: 16px; }
-  .brand { font-weight: 700; letter-spacing: .02em; color: var(--muted); margin-right: .25rem; }
-  .brand b { color: var(--fg); }
-  header button { font: inherit; font-weight: 600; min-height: 2.6rem; padding: .35rem .8rem; border-radius: .6rem;
+  .logo { font: 700 1.15rem/1 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; margin-right: .3rem; }
+  .logo span { color: var(--accent); }
+  header button { font: 600 16px "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; min-height: 2.7rem; padding: .35rem .85rem; border-radius: .7rem;
                   color: var(--fg); background: var(--bg); border: 2px solid var(--line); cursor: pointer; }
-  header button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  header button[aria-pressed="true"] { background: var(--soft); }
   header button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  #badge { margin-left: auto; font-weight: 700; padding: .3rem .7rem; border-radius: 999px; background: var(--accent-soft); color: var(--fg); }
-  main { padding: 1rem 1rem 5rem; max-width: 50rem; margin: 0 auto; }
-  #finals p { margin: 0 0 .85rem; }
+  #badge { margin-left: auto; font: 700 14px ui-monospace, Menlo, Consolas, monospace; padding: .35rem .7rem; border-radius: 999px; border: 2px solid var(--line); background: var(--soft); color: var(--fg); }
+  main { padding: 1.2rem 1rem 6rem; max-width: 50rem; margin: 0 auto; }
+  #finals p { margin: 0 0 .9rem; font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
   #interim { color: var(--muted); font-style: italic; min-height: 1.5em; }
-  .empty { color: var(--muted); font-size: .9em; }
+  .empty { color: var(--muted); font-size: .85em; font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+  .nudge { position: fixed; left: 0; right: 0; bottom: 0; padding: .6rem 1rem; font: 14px ui-monospace, Menlo, Consolas, monospace; color: var(--fg); background: var(--bg); border-top: 2px solid var(--line); display: flex; gap: .8rem; align-items: center; justify-content: space-between; }
+  .nudge button { font: 600 14px "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; min-height: 2.4rem; padding: .3rem .8rem; border-radius: .6rem; color: var(--bg); background: var(--fg); border: 2px solid var(--fg); cursor: pointer; }
 </style>
 </head>
 <body>
 <header>
-  <span class="brand">read<b>along</b></span>
+  <span class="logo">read<span>along</span></span>
   <button id="smaller" aria-label="Smaller text">A−</button>
   <button id="bigger" aria-label="Bigger text">A+</button>
   <button id="contrast" aria-pressed="false">High contrast</button>
   <button id="scroll" aria-pressed="false">Pause scroll</button>
-  <span id="badge" role="status">Connecting</span>
+  <span id="badge" role="status">connecting</span>
 </header>
 <main>
-  <div id="finals" aria-live="polite"><p class="empty" id="empty">Captions appear here as the speaker talks.</p></div>
+  <div id="finals" aria-live="polite"><p class="empty" id="empty">Captions appear here as the speaker talks. Say hi to the person next to you while you wait.</p></div>
   <p id="interim" aria-hidden="true"></p>
 </main>
+<div class="nudge">
+  <span id="nudgeText">Reading along next to someone? Share the link.</span>
+  <button id="share" type="button">Share</button>
+</div>
 <script>
 const room = location.pathname.split("/")[2];
-document.title = `Live captions: ${room}`;
+document.title = `Readalong: ${room}`;
 const finalsEl = document.getElementById("finals");
 const interimEl = document.getElementById("interim");
 const badge = document.getElementById("badge");
@@ -57,7 +63,7 @@ const contrastBtn = document.getElementById("contrast");
 function applyContrast(on) {
   document.body.classList.toggle("contrast", on);
   contrastBtn.setAttribute("aria-pressed", on);
-  document.querySelector('meta[name="theme-color"]').content = on ? "#000000" : "#ffffff";
+  document.querySelector('meta[name="theme-color"]').content = on ? "#000000" : "#fff7e6";
   localStorage.setItem("contrast", on ? "1" : "");
 }
 applyContrast(localStorage.getItem("contrast") === "1");
@@ -68,6 +74,15 @@ scrollBtn.onclick = () => {
   pauseScroll = !pauseScroll;
   scrollBtn.setAttribute("aria-pressed", pauseScroll);
   scrollBtn.textContent = pauseScroll ? "Resume scroll" : "Pause scroll";
+};
+
+document.getElementById("share").onclick = async () => {
+  const data = { title: "Readalong", text: "Live captions for this talk", url: location.href };
+  const t = document.getElementById("nudgeText");
+  try {
+    if (navigator.share) { await navigator.share(data); return; }
+    await navigator.clipboard.writeText(location.href); t.textContent = "Link copied.";
+  } catch (e) { t.textContent = location.href; }
 };
 
 function addFinal(text) {
@@ -98,11 +113,11 @@ es.addEventListener("bye", () => { connected = false; });
 es.onerror = () => { connected = false; };
 
 setInterval(() => {
-  if (!connected) { badge.textContent = "Reconnecting"; return; }
-  if (!lastSpokenAt) { badge.textContent = "Waiting for the speaker"; return; }
+  if (!connected) { badge.textContent = "reconnecting"; return; }
+  if (!lastSpokenAt) { badge.textContent = "waiting for the speaker"; return; }
   // ponytail: uses device clocks; a server clock offset is the upgrade if phones drift.
   const behind = Math.max(0, Math.round((Date.now() - lastSpokenAt) / 1000));
-  badge.textContent = `Last caption ${behind} s ago`;
+  badge.textContent = `last caption ${behind}s ago`;
 }, 1000);
 </script>
 </body>
