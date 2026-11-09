@@ -3,30 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
 <title>Live captions</title>
 <style>
-  :root { --fg: #111; --bg: #fff; --muted: #444; --size: 24px; }
-  body.contrast { --fg: #fff; --bg: #000; --muted: #ddd; }
-  body { font: var(--size)/1.5 system-ui, sans-serif; margin: 0; color: var(--fg); background: var(--bg); }
-  header { position: sticky; top: 0; background: var(--bg); padding: .5rem 1rem; border-bottom: 2px solid var(--fg);
-           display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: 16px; }
-  header button { font: inherit; padding: .4rem .8rem; color: var(--fg); background: var(--bg); border: 2px solid var(--fg); }
-  #badge { margin-left: auto; font-weight: 600; }
-  main { padding: 1rem; }
-  #finals p { margin: 0 0 .75rem; }
+  :root { --fg: #0b1020; --bg: #ffffff; --muted: #4a5578; --line: #d7dcef; --accent: #0e7c6b; --accent-soft: #e4f7f2; --size: 24px; }
+  body.contrast { --fg: #ffffff; --bg: #000000; --muted: #e6e6e6; --line: #ffffff; --accent: #38e8c6; --accent-soft: #11201c; }
+  * { box-sizing: border-box; }
+  body { font: var(--size)/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; color: var(--fg); background: var(--bg); }
+  header { position: sticky; top: 0; z-index: 1; background: var(--bg); border-bottom: 2px solid var(--line);
+           padding: .6rem .9rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; font-size: 16px; }
+  .brand { font-weight: 700; letter-spacing: .02em; color: var(--muted); margin-right: .25rem; }
+  .brand b { color: var(--fg); }
+  header button { font: inherit; font-weight: 600; min-height: 2.6rem; padding: .35rem .8rem; border-radius: .6rem;
+                  color: var(--fg); background: var(--bg); border: 2px solid var(--line); cursor: pointer; }
+  header button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  header button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  #badge { margin-left: auto; font-weight: 700; padding: .3rem .7rem; border-radius: 999px; background: var(--accent-soft); color: var(--fg); }
+  main { padding: 1rem 1rem 5rem; max-width: 50rem; margin: 0 auto; }
+  #finals p { margin: 0 0 .85rem; }
   #interim { color: var(--muted); font-style: italic; min-height: 1.5em; }
+  .empty { color: var(--muted); font-size: .9em; }
 </style>
 </head>
 <body>
 <header>
-  <button id="smaller" aria-label="Smaller text">A-</button>
+  <span class="brand">read<b>along</b></span>
+  <button id="smaller" aria-label="Smaller text">A−</button>
   <button id="bigger" aria-label="Bigger text">A+</button>
   <button id="contrast" aria-pressed="false">High contrast</button>
   <button id="scroll" aria-pressed="false">Pause scroll</button>
   <span id="badge" role="status">Connecting</span>
 </header>
 <main>
-  <div id="finals" aria-live="polite"></div>
+  <div id="finals" aria-live="polite"><p class="empty" id="empty">Captions appear here as the speaker talks.</p></div>
   <p id="interim" aria-hidden="true"></p>
 </main>
 <script>
@@ -48,6 +57,7 @@ const contrastBtn = document.getElementById("contrast");
 function applyContrast(on) {
   document.body.classList.toggle("contrast", on);
   contrastBtn.setAttribute("aria-pressed", on);
+  document.querySelector('meta[name="theme-color"]').content = on ? "#000000" : "#ffffff";
   localStorage.setItem("contrast", on ? "1" : "");
 }
 applyContrast(localStorage.getItem("contrast") === "1");
@@ -61,6 +71,8 @@ scrollBtn.onclick = () => {
 };
 
 function addFinal(text) {
+  const empty = document.getElementById("empty");
+  if (empty) empty.remove();
   const p = document.createElement("p");
   p.textContent = text;
   finalsEl.appendChild(p);
@@ -70,8 +82,9 @@ function follow() { if (!pauseScroll) window.scrollTo(0, document.body.scrollHei
 const es = new EventSource(`/api/rooms/${room}/stream`);
 es.addEventListener("backlog", e => {
   connected = true;
-  finalsEl.replaceChildren();
-  for (const c of JSON.parse(e.data) || []) addFinal(c.text);
+  const items = JSON.parse(e.data) || [];
+  if (items.length) finalsEl.replaceChildren();
+  for (const c of items) addFinal(c.text);
   follow();
 });
 es.addEventListener("caption", e => {
