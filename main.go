@@ -114,6 +114,10 @@ func (s *server) postCaption(w http.ResponseWriter, r *http.Request) {
 		reject(http.StatusBadRequest, "text too long")
 		return
 	}
+	if c.From != "" && !langRe.MatchString(c.From) {
+		reject(http.StatusBadRequest, "bad from")
+		return
+	}
 	// Never the caption text itself in telemetry, only its length.
 	span.SetAttributes(attribute.Int("seq", c.Seq), attribute.Bool("final", c.Final), attribute.Int("text.length", len(c.Text)))
 	s.tel.recordDelay(ctx, room, "received", time.Now().UnixMilli()-c.SpokenAt)

@@ -48,6 +48,13 @@
   <section class="card">
     <label for="token">speaker token</label>
     <input id="token" type="password" autocomplete="off">
+    <label for="srclang" style="margin-top:.8rem">I speak</label>
+    <select id="srclang" style="width:100%;font:inherit;font-size:1.05rem;padding:.7rem 1rem;border-radius:.8rem;border:2px solid #3a362f;background:#15130f;color:var(--paper)">
+      <option value="en-US">English</option><option value="tr-TR">Türkçe</option><option value="de-DE">Deutsch</option>
+      <option value="es-ES">Español</option><option value="fr-FR">Français</option><option value="pt-BR">Português</option>
+      <option value="it-IT">Italiano</option><option value="ja-JP">日本語</option><option value="ko-KR">한국어</option>
+      <option value="zh-CN">中文</option><option value="hi-IN">हिन्दी</option><option value="ar-SA">العربية</option>
+    </select>
     <div class="row">
       <button id="start">Start captions</button>
       <button id="pause" disabled>Pause</button>
@@ -89,6 +96,9 @@ document.getElementById("copy").onclick = async () => {
   setTimeout(() => b.textContent = "Copy link", 1500);
 };
 const tokenEl = document.getElementById("token");
+const srcEl = document.getElementById("srclang");
+srcEl.value = localStorage.getItem("srclang") || "en-US";
+srcEl.onchange = () => localStorage.setItem("srclang", srcEl.value);
 tokenEl.value = sessionStorage.getItem("token") || "";
 const statusText = document.getElementById("statusText");
 const statusEl = document.getElementById("status");
@@ -112,7 +122,7 @@ async function send(text, final) {
     const res = await fetch(`/api/rooms/${room}/captions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tokenEl.value },
-      body: JSON.stringify({ seq: ++seq, text, final, spokenAt: Date.now(), save: document.getElementById("save").checked }),
+      body: JSON.stringify({ seq: ++seq, text, final, spokenAt: Date.now(), save: document.getElementById("save").checked, from: srcEl.value.slice(0, 2) }),
     });
     if (res.status === 401) { setState("wrong token"); return; }
     if (res.ok) { listeners = (await res.json()).listeners; btn("listeners").textContent = listeners; }
@@ -127,7 +137,8 @@ function start() {
   rec = new SR();
   rec.continuous = true;
   rec.interimResults = true;
-  rec.lang = "en-US";
+  rec.lang = srcEl.value;
+  srcEl.disabled = true;
   rec.onresult = e => {
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const r = e.results[i];
@@ -149,6 +160,7 @@ function start() {
 
 function halt(label) {
   running = false;
+  srcEl.disabled = false;
   if (rec) rec.stop();
   btn("start").disabled = false; btn("pause").disabled = true; btn("stop").disabled = label === "stopped";
   btn("start").textContent = label === "paused" ? "Resume" : "Start captions";

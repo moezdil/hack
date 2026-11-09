@@ -295,3 +295,25 @@ func TestTranslationGoesOnlyToListenersWhoAskedForIt(t *testing.T) {
 		t.Fatalf("translations must not enter the backlog, got %d finals", n)
 	}
 }
+
+func TestTranslationSkipsTheSpokenLanguage(t *testing.T) {
+	calls := 0
+	openai := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Write([]byte(`{"choices":[{"message":{"content":"x"}}],"usage":{}}`))
+	}))
+	defer openai.Close()
+	s := newServer("t")
+	s.trans = &translator{url: openai.URL, key: "k", model: "m", client: openai.Client(), tel: s.tel}
+	s.trans.cost, _ = s.tel.meter.Float64Counter("llm.cost.usd")
+	ch, _, leave := s.hub.subscribe("r", "tr")
+	defer leave()
+	s.translateAndPublish("r", caption{Seq: 1, Text: "merhaba", Final: true, From: "tr"}, []string{"tr"})
+	if calls != 0 || len(ch) != 0 {
+		t.Fatalf("translated into the spoken language: calls=%d queued=%d", calls, len(ch))
+	}
+	s.translateAndPublish("r", caption{Seq: 2, Text: "hello", Final: true}, []string{"tr"})
+	if calls != 1 || len(ch) != 1 {
+		t.Fatalf("expected one translation: calls=%d queued=%d", calls, len(ch))
+	}
+}

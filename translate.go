@@ -44,16 +44,19 @@ func newTranslator(tel *telemetry) *translator {
 
 // translate returns text in lang. One call per caption and language, no batching.
 // ponytail: sequential per language; parallel calls plus a per-caption cache if latency shows up in Dash0.
-func (t *translator) translate(ctx context.Context, text, lang string) (string, error) {
+func (t *translator) translate(ctx context.Context, text, from, lang string) (string, error) {
+	if from == "" {
+		from = "en"
+	}
 	ctx, span := t.tel.tracer.Start(ctx, "translate")
 	defer span.End()
 	span.SetAttributes(attribute.String("gen_ai.system", "openai"), attribute.String("gen_ai.request.model", t.model),
-		attribute.String("lang", lang), attribute.Int("text.length", len(text)))
+		attribute.String("from", from), attribute.String("lang", lang), attribute.Int("text.length", len(text)))
 	body := map[string]any{
 		"model":       t.model,
 		"temperature": 0,
 		"messages": []map[string]string{
-			{"role": "system", "content": "Translate the conference caption into the language with IETF tag " + lang +
+			{"role": "system", "content": "Translate the conference caption from the language with IETF tag " + from + " into the language with IETF tag " + lang +
 				". Keep technical terms, product names and acronyms (Kubernetes, kubelet, eBPF, Argo CD, OpenTelemetry) as they are. Reply with the translation only."},
 			{"role": "user", "content": text},
 		},
@@ -100,7 +103,10 @@ func (s *server) translateAndPublish(room string, c caption, langs []string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	for _, lang := range langs {
-		text, err := s.trans.translate(ctx, c.Text, lang)
+		if lang == c.From || (c.From == "" && lang == "en") {
+			continue // already in that language
+		}
+		text, err := s.trans.translate(ctx, c.Text, c.From, lang)
 		if err != nil {
 			slog.WarnContext(ctx, "translate", "room", room, "seq", c.Seq, "lang", lang, "err", err)
 			continue

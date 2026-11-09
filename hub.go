@@ -10,6 +10,7 @@ type caption struct {
 	SpokenAt int64  `json:"spokenAt"`
 	Save     bool   `json:"save,omitempty"` // speaker opted in to a searchable transcript
 	Lang     string `json:"lang,omitempty"` // set on translated finals; empty means the original
+	From     string `json:"from,omitempty"` // language the speaker set, e.g. "en"; empty means English
 }
 
 const (
