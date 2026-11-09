@@ -63,6 +63,7 @@ func setupTelemetry(ctx context.Context) (shutdown func(context.Context) error, 
 // telemetry holds the instruments. They are no-ops until setupTelemetry installs real providers.
 type telemetry struct {
 	tracer     trace.Tracer
+	meter      metric.Meter
 	delay      metric.Float64Histogram
 	captions   metric.Int64Counter
 	reconnects metric.Int64Counter
@@ -70,7 +71,7 @@ type telemetry struct {
 
 func newTelemetry(h *hub) *telemetry {
 	m := otel.Meter(scope)
-	t := &telemetry{tracer: otel.Tracer(scope)}
+	t := &telemetry{tracer: otel.Tracer(scope), meter: m}
 	t.delay, _ = m.Float64Histogram("caption.delay", metric.WithUnit("ms"),
 		metric.WithDescription("Time from speech to a pipeline stage (received, sent, displayed)"),
 		metric.WithExplicitBucketBoundaries(100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000, 10000))

@@ -35,6 +35,12 @@
   .card.y { background: #fff0b8; } .card.g { background: #dcf5e8; } .card.b { background: #dfe9ff; }
   .card h2 { font: 700 1.25rem/1.2 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; margin: 0 0 .4rem; }
   .card p { margin: 0; font-size: 1rem; }
+  .built { margin-top: 2.5rem; }
+  .built h2 { font: 700 .85rem ui-monospace, Menlo, Consolas, monospace; color: var(--mute); letter-spacing: .08em; text-transform: uppercase; margin: 0 0 .7rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .6rem; }
+  .chip { display: inline-flex; align-items: center; gap: .5rem; border: 2px solid var(--ink); border-radius: 999px; padding: .35rem .85rem .35rem .5rem; background: #fff; font: 600 .9rem "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); text-decoration: none; }
+  .chip i { width: 1.1rem; height: 1.1rem; border-radius: 50%; display: inline-block; }
+  .chip span { color: var(--mute); font-weight: 500; }
   .social { margin-top: 3rem; border-top: 2px dashed var(--ink); padding-top: 1.5rem; display: grid; gap: .5rem; }
   .social b { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--coral); }
   footer { margin-top: 2.5rem; color: var(--mute); font-size: .9rem; }
@@ -66,6 +72,18 @@
     <div class="card y"><h2>Built for every listener</h2><p>Deaf and hard of hearing, non-native speakers, the back row. Big text and high contrast, one tap away.</p></div>
     <div class="card g"><h2>Nothing to install</h2><p>One link on any phone. Captions stream over the open web; the mic stays on the speaker's side.</p></div>
     <div class="card b"><h2>Honest about delay</h2><p>Each phone shows how far behind it is. The same number drives the speaker's dashboard.</p></div>
+  </section>
+
+  <section class="built" aria-label="Built with">
+    <h2>Built and run with</h2>
+    <div class="chips">
+      <a class="chip" href="https://gitar.ai"><i style="background:#ff4f1f"></i>Gitar by Sonar <span>· reviews every PR</span></a>
+      <a class="chip" href="https://www.dash0.com"><i style="background:#2f6fed"></i>Dash0 <span>· traces, metrics, logs</span></a>
+      <a class="chip" href="https://radarhq.io"><i style="background:#10b981"></i>Radar <span>· Kubernetes, Argo CD, AI SRE</span></a>
+      <a class="chip" href="https://www.elastic.co"><i style="background:#fec514"></i>Elasticsearch <span>· semantic search</span></a>
+      <a class="chip" href="https://opentelemetry.io"><i style="background:#f5a800"></i>OpenTelemetry</a>
+      <a class="chip" href="https://kubernetes.io"><i style="background:#326ce5"></i>Kubernetes</a>
+    </div>
   </section>
 
   <section class="social" aria-label="Conference tips">

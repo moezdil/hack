@@ -34,6 +34,13 @@
   <button id="bigger" aria-label="Bigger text">A+</button>
   <button id="contrast" aria-pressed="false">High contrast</button>
   <button id="scroll" aria-pressed="false">Pause scroll</button>
+  <select id="lang" hidden aria-label="Translate captions to" style="font:600 16px 'Avenir Next','Helvetica Neue',Helvetica,Arial,sans-serif;min-height:2.7rem;padding:.3rem .6rem;border-radius:.7rem;border:2px solid var(--line);background:var(--bg);color:var(--fg)">
+    <option value="">Original (English)</option>
+    <option value="tr">Türkçe</option><option value="de">Deutsch</option><option value="es">Español</option>
+    <option value="fr">Français</option><option value="pt">Português</option><option value="it">Italiano</option>
+    <option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option>
+    <option value="hi">हिन्दी</option><option value="ar">العربية</option>
+  </select>
   <span id="badge" role="status">connecting</span>
 </header>
 <main>
@@ -115,18 +122,27 @@ searchForm.onsubmit = async e => {
   } catch (err) { hitsEl.textContent = "Search is unavailable right now."; }
 };
 
-const es = new EventSource(`/api/rooms/${room}/stream`);
+const langSel = document.getElementById("lang");
+const lang = localStorage.getItem("lang") || "";
+langSel.value = lang;
+langSel.onchange = () => { localStorage.setItem("lang", langSel.value); location.reload(); };
+fetch(`/api/rooms/${room}/search`).then(r => r.json()).then(j => { if (j.translate) langSel.hidden = false; }).catch(() => {});
+const es = new EventSource(`/api/rooms/${room}/stream` + (lang ? `?lang=${encodeURIComponent(lang)}` : ""));
 es.addEventListener("backlog", e => {
   connected = true;
   const items = JSON.parse(e.data) || [];
   if (items.length) finalsEl.replaceChildren();
   for (const c of items) addFinal(c.text);
+  if (lang && items.length) { const n = document.createElement("p"); n.className = "empty"; n.textContent = "Earlier lines are shown in the original; new lines arrive translated."; finalsEl.appendChild(n); }
   follow();
 });
 es.addEventListener("caption", e => {
   const c = JSON.parse(e.data);
   lastSpokenAt = c.spokenAt;
-  if (c.final) { addFinal(c.text); interimEl.textContent = ""; } else { interimEl.textContent = c.text; }
+  // With a language chosen, finished lines arrive translated; the live line stays in the original.
+  if (c.lang) { addFinal(c.text); }
+  else if (c.final) { if (!lang) addFinal(c.text); interimEl.textContent = ""; }
+  else { interimEl.textContent = c.text; }
   follow();
 });
 // On "bye" the server is restarting; EventSource reconnects on its own and the backlog fills the gap.

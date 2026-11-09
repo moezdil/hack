@@ -26,14 +26,18 @@ import (
 //go:embed web
 var webFS embed.FS
 
-var roomRe = regexp.MustCompile(`^[a-z0-9-]{1,32}$`)
+var (
+	roomRe = regexp.MustCompile(`^[a-z0-9-]{1,32}$`)
+	langRe = regexp.MustCompile(`^$|^[a-z]{2}(-[A-Za-z]{2,4})?$`)
+)
 
 const maxText = 500
 
 type server struct {
 	hub     *hub
 	tel     *telemetry
-	search  *searcher // nil when Elasticsearch is not configured
+	search  *searcher   // nil when Elasticsearch is not configured
+	trans   *translator // nil when OPENAI_API_KEY is not set
 	token   string
 	closing chan struct{} // closed on shutdown: streams send "bye" and return
 }
@@ -122,6 +126,11 @@ func (s *server) postCaption(w http.ResponseWriter, r *http.Request) {
 	if c.Final && c.Save && s.search != nil {
 		go s.search.store(room, c)
 	}
+	if c.Final && s.trans != nil {
+		if langs := s.hub.langs(room); len(langs) > 0 {
+			go s.translateAndPublish(room, c, langs)
+		}
+	}
 	s.tel.captions.Add(ctx, 1, metric.WithAttributes(attribute.Bool("final", c.Final), attribute.String("status", "ok")))
 	slog.InfoContext(ctx, "caption", "room", room, "seq", c.Seq, "final", c.Final, "len", len(c.Text),
 		"listeners", listeners, "dropped", dropped)
@@ -139,7 +148,7 @@ func (s *server) searchHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
 	if q == "" {
-		json.NewEncoder(w).Encode(map[string]bool{"enabled": s.search != nil})
+		json.NewEncoder(w).Encode(map[string]bool{"enabled": s.search != nil, "translate": s.trans != nil})
 		return
 	}
 	if s.search == nil {
@@ -170,7 +179,11 @@ func (s *server) stream(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
 		return
 	}
-	ch, backlog, leave := s.hub.subscribe(room)
+	lang := r.URL.Query().Get("lang")
+	if !langRe.MatchString(lang) || s.trans == nil {
+		lang = ""
+	}
+	ch, backlog, leave := s.hub.subscribe(room, lang)
 	defer leave()
 
 	h := w.Header()
@@ -248,7 +261,7 @@ func main() {
 func newServer(token string) *server {
 	h := newHub()
 	tel := newTelemetry(h)
-	return &server{hub: h, tel: tel, search: newSearcher(tel), token: token, closing: make(chan struct{})}
+	return &server{hub: h, tel: tel, search: newSearcher(tel), trans: newTranslator(tel), token: token, closing: make(chan struct{})}
 }
 
 func envOr(k, def string) string {
