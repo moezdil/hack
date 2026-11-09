@@ -55,4 +55,4 @@ Serverless project, `captions` index with `semantic_text`. Verified end to end: 
 ## Open
 
 - Reconnect pattern on `talk` (above).
-- SLO (95% of captions within 2 s over 1 h): p95 today was about 2.8 s, so the target is not met yet; the biggest share is the browser's speech recognition latency, which the `received` stage includes.
+- SLO created in Dash0 at 15:56: "hack / captions / delivered within 2 s", target 95% over 28 days, SLI `histogram_fraction(0, 2000, ...)` on `caption.delay`. Today's p95 of about 2.8 s means the budget will burn; the biggest share is the browser's speech recognition latency, which the `received` stage includes.
