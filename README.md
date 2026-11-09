@@ -1,33 +1,52 @@
 # Readalong
 
-Live captions for any talk. Scan a QR code, read along on your phone. No app, no account, nothing stored.
+**Every talk, every ear.** Live captions for conference talks, on the listener's own phone. Scan a QR code, read along. No app, no account, nothing stored.
 
 ![Listener page filling with captions](docs/demo.gif)
 
-Live: https://hack.cnh.radarhq.io
+**Live:** https://hack.cnh.radarhq.io · **Try it:** open [/r/demo](https://hack.cnh.radarhq.io/r/demo) on your phone, a demo room gets a new line every minute.
 
-## Use it
+## Why
 
-1. Speaker: open `/s/<room>` in Chrome, paste the speaker token, press **Start captions**.
-2. Listeners: scan the QR on the slide or open `/r/<room>` on any phone.
-3. Captions appear as the speaker talks. **A+** for bigger text, **High contrast** to flip colors, pick a language to read translated lines, **Share** to pass the link on.
+Most sessions have no captions. Deaf and hard-of-hearing attendees, non-native speakers and the back row lose the talk. Human captioning is rare and expensive. Readalong gives any talk live captions in under a minute, for about nothing per talk.
+
+## What listeners get
+
+- Captions on their own phone, from a QR code on the slide. No install, no sign-up.
+- **A+ / A−** text size, **high contrast** mode, screen-reader friendly (`aria-live`).
+- **Translation**: pick a language, finished lines arrive translated.
+- **Search what was said**, by meaning, when the speaker allows it.
+- A badge that says how far behind the captions are. Honest about delay.
+- **Share** the link with the person next to you.
+
+## Use it in three steps
+
+1. Speaker opens `/s/<room>` in Chrome, pastes the speaker token, presses **Start captions**.
+2. Listeners scan the QR on the slide or open `/r/<room>`.
+3. Talk. That's it.
 
 QR for a room: `qrencode -o qr.png https://hack.cnh.radarhq.io/r/<room>`
 
-<img src="docs/qr-talk.png" alt="QR code for room talk" width="160">
+<img src="docs/qr-talk.png" alt="QR code for room talk" width="150">
 
 ## How it works
 
 ![Architecture](docs/architecture.svg)
 
-Editable source: [docs/architecture.excalidraw](docs/architecture.excalidraw).
+Editable: [docs/architecture.excalidraw](docs/architecture.excalidraw)
 
-- Speaker page: browser speech recognition, restarts itself when Chrome stops.
-- Server: one Go binary, standard library. Validates room, text length and token. Keeps the last 50 lines for late joiners. Never blocks on a slow phone.
-- Listener page: text size, high contrast, `aria-live`, pause scroll, "last caption N s ago" badge.
-- Telemetry: OpenTelemetry traces, metrics and logs to Dash0. Only lengths and counts, never the text.
-- Translation (optional): listeners pick a language; finished lines arrive translated through the OpenAI API, the live line stays in the original. Needs `OPENAI_API_KEY`; token usage and cost go to Dash0.
-- Search (optional): if the speaker turns on "Save transcript", final lines go to Elasticsearch (`semantic_text`) and listeners get a search box that finds lines by meaning. Off by default; needs `ELASTIC_URL` and `ELASTIC_API_KEY`.
+- **Speaker page**: Chrome's speech recognition, restarted automatically when Chrome stops it.
+- **Server**: one Go binary, standard library HTTP. Validates room, text length and token; fans out over server-sent events; keeps the last 50 lines for late joiners; never blocks on a slow phone; tells listeners to reconnect on shutdown.
+- **Translation**: OpenAI API, once per language wanted in the room; token usage and cost go to Dash0.
+- **Search**: Elasticsearch `semantic_text`, only for talks where the speaker turned on "Save transcript".
+- **Telemetry**: OpenTelemetry traces, metrics and logs to Dash0. Lengths and counts only, never the text.
+- **Delivery**: every change is a pull request reviewed by Gitar, built by GitHub Actions, deployed by Argo CD on a Radar cluster.
+
+## Built and run with
+
+Gitar by Sonar (reviews every PR, rules in `.gitar/review/`) · Dash0 (OpenTelemetry, Agent0) · Radar (Kubernetes, Argo CD, AI investigations) · Elasticsearch (semantic search) · OpenAI (translation) · Go, Kubernetes.
+
+The day's real incidents, investigations and numbers: [DEMO.md](DEMO.md).
 
 ## Run locally
 
@@ -37,15 +56,15 @@ SPEAKER_TOKEN=$(openssl rand -hex 16) go run .
 
 Speaker: http://localhost:8080/s/talk (Chrome). Listeners: http://localhost:8080/r/talk. Tests: `go test ./...`.
 
-Optional Dash0 export: set `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_EXPORTER_OTLP_HEADERS`.
+Optional: `OTEL_EXPORTER_OTLP_ENDPOINT` + `OTEL_EXPORTER_OTLP_HEADERS` (Dash0), `OPENAI_API_KEY` (translation), `ELASTIC_URL` + `ELASTIC_API_KEY` (search). Each feature stays off without its variables.
 
 ## Deploy
 
-Push to `main` builds `ghcr.io/moezdil/hack:<sha>`; Argo CD deploys `deploy/` (see `argocd/application.yaml`). Create the Secret `hack` with `SPEAKER_TOKEN` and the OTLP variables first; it is never committed. One replica: fan-out is in memory.
+Push to `main` builds `ghcr.io/moezdil/hack:<sha>` and bumps `deploy/kustomization.yaml`; Argo CD applies `deploy/` (see `argocd/application.yaml`). Create Secret `hack` with the variables above first; it is never committed. One replica: fan-out is in memory.
 
 ## Privacy
 
-No audio or accounts, ever. Transcripts are stored only if the speaker turns on "Save transcript" for their talk. Audio goes from the speaker's Chrome to Google's speech service.
+No audio, no accounts. Transcripts are stored only if the speaker turns on "Save transcript" for their talk. Audio goes from the speaker's Chrome to Google's speech service.
 
 ## AI disclosure
 
