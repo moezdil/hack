@@ -3,65 +3,85 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b1020">
-<title>Readalong: live captions for every talk</title>
+<meta name="theme-color" content="#fff7e6">
+<title>Readalong: every talk, every ear</title>
 <style>
-  :root { --bg: #0b1020; --panel: #121a33; --fg: #f3f6ff; --muted: #aab4d6; --accent: #38e8c6; --accent-ink: #052a24; --line: #26315a; }
+  :root { --paper: #fff7e6; --ink: #1c1a17; --coral: #e8472b; --mustard: #f5b301; --forest: #0f5c45; --sky: #2f6fed; --mute: #6b645a; }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 18px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background:
-         radial-gradient(1200px 600px at 80% -10%, #1b2b6b 0%, transparent 60%),
-         radial-gradient(800px 500px at -10% 110%, #0e4d45 0%, transparent 55%), var(--bg); min-height: 100vh; }
-  main { max-width: 56rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
-  .brand { display: flex; align-items: center; gap: .6rem; font-weight: 700; letter-spacing: .02em; color: var(--muted); }
-  .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 .35rem rgba(56,232,198,.18); animation: pulse 2s infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 .7rem rgba(56,232,198,0); } }
-  h1 { font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.05; margin: 1.2rem 0 .6rem; letter-spacing: -.02em; }
-  h1 em { font-style: normal; color: var(--accent); }
-  .lead { font-size: clamp(1.05rem, 2.4vw, 1.35rem); color: var(--muted); max-width: 38rem; margin: 0 0 2rem; }
-  form { display: grid; gap: .75rem; grid-template-columns: 1fr; background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; padding: 1.25rem; max-width: 34rem; }
-  label { font-size: .95rem; color: var(--muted); }
-  input { width: 100%; font: inherit; font-size: 1.25rem; padding: .8rem 1rem; border-radius: .7rem; border: 1px solid var(--line); background: #0d1430; color: var(--fg); }
-  input:focus { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .row { display: flex; gap: .75rem; flex-wrap: wrap; }
-  button { font: inherit; font-weight: 700; padding: .85rem 1.3rem; border-radius: .7rem; border: 2px solid transparent; cursor: pointer; flex: 1 1 10rem; }
-  .primary { background: var(--accent); color: var(--accent-ink); }
-  .ghost { background: transparent; color: var(--fg); border-color: var(--line); }
-  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin-top: 2.5rem; }
-  .pillar { background: rgba(18,26,51,.7); border: 1px solid var(--line); border-radius: 1rem; padding: 1.1rem 1.2rem; }
-  .pillar b { display: block; font-size: 1.05rem; margin-bottom: .25rem; }
-  .pillar span { color: var(--muted); font-size: .95rem; }
-  footer { margin-top: 3rem; color: var(--muted); font-size: .9rem; }
-  footer a { color: var(--accent); }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; color: var(--ink); background: var(--paper); font: 18px/1.55 "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+         background-image: radial-gradient(circle at 1px 1px, rgba(28,26,23,.09) 1px, transparent 0); background-size: 22px 22px; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+  nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .logo { font: 700 1.4rem/1 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; letter-spacing: -.01em; }
+  .logo span { color: var(--coral); }
+  .tag { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; color: var(--mute); border: 1.5px solid var(--ink); padding: .3rem .6rem; border-radius: 999px; }
+  h1 { font: 800 clamp(2.6rem, 8vw, 5.4rem)/1 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; letter-spacing: -.03em; margin: 2.5rem 0 1rem; }
+  h1 mark { background: linear-gradient(transparent 62%, var(--mustard) 62%); color: inherit; padding: 0 .1em; }
+  .lead { font-size: clamp(1.1rem, 2.5vw, 1.4rem); max-width: 40rem; margin: 0 0 1.5rem; }
+  .ticker { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--forest); font-size: .95rem; min-height: 1.5em; margin-bottom: 1.5rem; }
+  .ticker::before { content: "> "; color: var(--coral); }
+  form { display: grid; gap: .9rem; max-width: 36rem; background: #fff; border: 2px solid var(--ink); border-radius: 1.2rem; padding: 1.4rem; box-shadow: .5rem .5rem 0 var(--ink); }
+  label { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; color: var(--mute); }
+  input { width: 100%; font: inherit; font-size: 1.4rem; padding: .8rem 1rem; border: 2px solid var(--ink); border-radius: .8rem; background: var(--paper); color: var(--ink); }
+  input:focus, button:focus-visible, a:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+  .row { display: flex; gap: .8rem; flex-wrap: wrap; }
+  button { font: 700 1.05rem "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif; padding: .9rem 1.3rem; border-radius: .8rem; border: 2px solid var(--ink); cursor: pointer; flex: 1 1 10rem; transition: transform .08s; }
+  button:active { transform: translate(2px, 2px); }
+  .go { background: var(--coral); color: #fff; }
+  .alt { background: #fff; color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; margin-top: 3rem; }
+  .card { border: 2px solid var(--ink); border-radius: 1.2rem; padding: 1.2rem 1.3rem; background: #fff; }
+  .card.y { background: #fff0b8; } .card.g { background: #dcf5e8; } .card.b { background: #dfe9ff; }
+  .card h2 { font: 700 1.25rem/1.2 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; margin: 0 0 .4rem; }
+  .card p { margin: 0; font-size: 1rem; }
+  .social { margin-top: 3rem; border-top: 2px dashed var(--ink); padding-top: 1.5rem; display: grid; gap: .5rem; }
+  .social b { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--coral); }
+  footer { margin-top: 2.5rem; color: var(--mute); font-size: .9rem; }
+  footer a { color: var(--forest); }
+  @media (prefers-reduced-motion: reduce) { .ticker { transition: none; } }
 </style>
 </head>
 <body>
-<main>
-  <div class="brand"><span class="dot" aria-hidden="true"></span> readalong</div>
-  <h1>Every talk,<br><em>every ear.</em></h1>
-  <p class="lead">Live captions for conference talks. Scan the code on the speaker's slide, read along on your phone. No app, no account, nothing stored.</p>
+<div class="wrap">
+  <nav>
+    <div class="logo">read<span>along</span></div>
+    <div class="tag">live captions · open source</div>
+  </nav>
+
+  <h1>Every talk,<br><mark>every ear.</mark></h1>
+  <p class="lead">Live captions for conference talks. Scan the code on the speaker's slide and read along on your own phone. No app, no account, nothing stored.</p>
+  <p class="ticker" id="ticker" aria-live="off">Scan. Read. Belong.</p>
 
   <form id="f">
-    <label for="room">Room name (it's on the slide)</label>
+    <label for="room">room name (it's on the slide)</label>
     <input id="room" pattern="[a-z0-9-]{1,32}" placeholder="talk" autocomplete="off" required autofocus>
     <div class="row">
-      <button type="submit" class="primary">Read along</button>
-      <button type="button" class="ghost" id="speak">I'm the speaker</button>
+      <button type="submit" class="go">Read along</button>
+      <button type="button" class="alt" id="speak">I'm the speaker</button>
     </div>
   </form>
 
-  <section class="pillars" aria-label="What you get">
-    <div class="pillar"><b>Built for every listener</b><span>Deaf and hard of hearing, non-native speakers, the back row. Big text and high contrast, one tap away.</span></div>
-    <div class="pillar"><b>Nothing to install</b><span>A link on any phone. Captions stream over the open web; the room stays on the speaker's side.</span></div>
-    <div class="pillar"><b>Honest about delay</b><span>Each phone shows how far behind it is. The same number drives the speaker's dashboard.</span></div>
+  <section class="grid" aria-label="Why">
+    <div class="card y"><h2>Built for every listener</h2><p>Deaf and hard of hearing, non-native speakers, the back row. Big text and high contrast, one tap away.</p></div>
+    <div class="card g"><h2>Nothing to install</h2><p>One link on any phone. Captions stream over the open web; the mic stays on the speaker's side.</p></div>
+    <div class="card b"><h2>Honest about delay</h2><p>Each phone shows how far behind it is. The same number drives the speaker's dashboard.</p></div>
   </section>
 
-  <footer>Speakers need Chrome: speech recognition runs in the browser and audio goes to Google's speech service. Open source on <a href="https://github.com/moezdil/hack">GitHub</a>.</footer>
-</main>
+  <section class="social" aria-label="Conference tips">
+    <div><b>#hallway</b> Reading along next to someone? Say hi. The best conversations start with "did you catch that?"</div>
+    <div><b>#speakers</b> Put the QR on your first slide and your last one. Late joiners get the last 50 lines.</div>
+    <div><b>#organizers</b> One room per track, one QR per screen. Costs about nothing per talk.</div>
+  </section>
+
+  <footer>Speakers need Chrome: speech recognition runs in the browser and audio goes to Google's speech service. Source on <a href="https://github.com/moezdil/hack">GitHub</a>. Made at the Cloud Native Hackathon, Salt Lake City.</footer>
+</div>
 <script>
 const room = () => document.getElementById("room").value.trim();
 document.getElementById("f").onsubmit = e => { e.preventDefault(); location.href = "/r/" + room(); };
 document.getElementById("speak").onclick = () => { if (room()) location.href = "/s/" + room(); };
+const lines = ["Scan. Read. Belong.", "The back row hears everything now.", "Captions are the hallway track's best friend.", "No sign-up. No excuses. Just the talk.", "Your phone, your font size, your contrast."];
+let k = 0; setInterval(() => { k = (k + 1) % lines.length; document.getElementById("ticker").textContent = lines[k]; }, 3500);
 </script>
 </body>
 </html>
