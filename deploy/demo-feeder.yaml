@@ -41,6 +41,7 @@ spec:
                 limits: {cpu: 100m, memory: 64Mi}
               securityContext:
                 runAsNonRoot: true
+                runAsUser: 100 # curlimages/curl runs as curl_user (uid 100); kubelet needs the number to verify non-root
                 allowPrivilegeEscalation: false
                 seccompProfile: {type: RuntimeDefault}
                 capabilities: {drop: ["ALL"]}
