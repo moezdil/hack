@@ -4,9 +4,13 @@ Scan a QR code, read the talk on your phone. No app, no account, nothing stored.
 
 ![Listener page filling with captions](docs/demo.gif)
 
-Built solo at the Cloud Native Hackathon (Salt Lake City, Nov 9 2026). Most sessions have no captions; deaf and hard-of-hearing attendees, non-native speakers and the back row lose the talk. Readalong gives any talk live captions in under a minute.
+**Three steps, no setup:**
 
-Live: https://hack.cnh.radarhq.io
+1. Speaker opens https://hack.cnh.radarhq.io/s/talk in Chrome, pastes the speaker token, presses **Start captions**.
+2. Listeners scan the QR code on the slide or open https://hack.cnh.radarhq.io/r/talk on their phone.
+3. That's it. Captions appear as the speaker talks. **A+** for bigger text, **High contrast** to flip colors.
+
+Live: https://hack.cnh.radarhq.io. Built solo at the Cloud Native Hackathon (Salt Lake City, Nov 9 2026) for deaf and hard-of-hearing attendees, non-native speakers and the back row.
 
 ## How it works
 
