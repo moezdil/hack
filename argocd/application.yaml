@@ -1,0 +1,19 @@
+# Applied once to the team cluster; Argo CD then deploys deploy/ on every push to main.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app
+  namespace: team-hack
+spec:
+  project: team-hack
+  source:
+    repoURL: https://github.com/moezdil/hack.git
+    targetRevision: main
+    path: deploy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: team-hack
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
