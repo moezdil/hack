@@ -8,6 +8,7 @@ type caption struct {
 	Text     string `json:"text"`
 	Final    bool   `json:"final"`
 	SpokenAt int64  `json:"spokenAt"`
+	Save     bool   `json:"save,omitempty"` // speaker opted in to a searchable transcript
 }
 
 const (

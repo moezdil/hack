@@ -26,6 +26,7 @@ Editable source: [docs/architecture.excalidraw](docs/architecture.excalidraw).
 - Server: one Go binary, standard library. Validates room, text length and token. Keeps the last 50 lines for late joiners. Never blocks on a slow phone.
 - Listener page: text size, high contrast, `aria-live`, pause scroll, "last caption N s ago" badge.
 - Telemetry: OpenTelemetry traces, metrics and logs to Dash0. Only lengths and counts, never the text.
+- Search (optional): if the speaker turns on "Save transcript", final lines go to Elasticsearch (`semantic_text`) and listeners get a search box that finds lines by meaning. Off by default; needs `ELASTIC_URL` and `ELASTIC_API_KEY`.
 
 ## Run locally
 
@@ -43,7 +44,7 @@ Push to `main` builds `ghcr.io/moezdil/hack:<sha>`; Argo CD deploys `deploy/` (s
 
 ## Privacy
 
-No audio, transcripts or accounts are stored. Audio goes from the speaker's Chrome to Google's speech service.
+No audio or accounts, ever. Transcripts are stored only if the speaker turns on "Save transcript" for their talk. Audio goes from the speaker's Chrome to Google's speech service.
 
 ## AI disclosure
 

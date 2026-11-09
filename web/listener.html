@@ -37,6 +37,11 @@
   <span id="badge" role="status">connecting</span>
 </header>
 <main>
+  <form id="search" hidden style="display:flex;gap:.5rem;margin:0 0 1rem">
+    <input id="q" type="search" placeholder="Search what was said" aria-label="Search the transcript" style="flex:1;font:inherit;font-size:16px;padding:.5rem .8rem;border:2px solid var(--line);border-radius:.7rem;background:var(--bg);color:var(--fg)">
+    <button type="submit" style="font:600 16px 'Avenir Next','Helvetica Neue',Helvetica,Arial,sans-serif;padding:.4rem .9rem;border-radius:.7rem;border:2px solid var(--line);background:var(--soft);color:var(--fg)">Find</button>
+  </form>
+  <div id="hits" aria-live="polite" style="font-size:.85em;margin-bottom:1rem"></div>
   <div id="finals" aria-live="polite"><p class="empty" id="empty">Captions appear here as the speaker talks. Say hi to the person next to you while you wait.</p></div>
   <p id="interim" aria-hidden="true"></p>
 </main>
@@ -93,6 +98,22 @@ function addFinal(text) {
   finalsEl.appendChild(p);
 }
 function follow() { if (!pauseScroll) window.scrollTo(0, document.body.scrollHeight); }
+
+const searchForm = document.getElementById("search");
+fetch(`/api/rooms/${room}/search`).then(r => r.json()).then(j => { if (j.enabled) searchForm.hidden = false; }).catch(() => {});
+searchForm.onsubmit = async e => {
+  e.preventDefault();
+  const q = document.getElementById("q").value.trim();
+  const hitsEl = document.getElementById("hits");
+  if (!q) { hitsEl.replaceChildren(); return; }
+  try {
+    const r = await fetch(`/api/rooms/${room}/search?q=` + encodeURIComponent(q));
+    const j = await r.json();
+    hitsEl.replaceChildren();
+    if (!j.hits || !j.hits.length) { hitsEl.textContent = "Nothing saved matches that yet."; return; }
+    for (const h of j.hits) { const p = document.createElement("p"); p.textContent = "› " + h.text; hitsEl.appendChild(p); }
+  } catch (err) { hitsEl.textContent = "Search is unavailable right now."; }
+};
 
 const es = new EventSource(`/api/rooms/${room}/stream`);
 es.addEventListener("backlog", e => {

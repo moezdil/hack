@@ -52,6 +52,9 @@
       <button id="pause" disabled>Pause</button>
       <button id="stop" disabled>Stop</button>
     </div>
+    <label class="opt" style="display:flex;gap:.6rem;align-items:center;margin-top:1rem;font-family:inherit;font-size:1rem;color:var(--paper)">
+      <input id="save" type="checkbox" style="width:1.3rem;height:1.3rem;margin:0"> Save transcript so listeners can search it (off by default)
+    </label>
     <p class="hint">Pause for Q&amp;A or private moments. Chrome only: recognition runs in the browser and audio goes to Google's speech service.</p>
   </section>
 
@@ -108,7 +111,7 @@ async function send(text, final) {
     const res = await fetch(`/api/rooms/${room}/captions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tokenEl.value },
-      body: JSON.stringify({ seq: ++seq, text, final, spokenAt: Date.now() }),
+      body: JSON.stringify({ seq: ++seq, text, final, spokenAt: Date.now(), save: document.getElementById("save").checked }),
     });
     if (res.status === 401) { setState("wrong token"); return; }
     if (res.ok) { listeners = (await res.json()).listeners; btn("listeners").textContent = listeners; }

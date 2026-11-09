@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -162,4 +164,65 @@ func waitFor(t *testing.T, ok func() bool) {
 		}
 	}
 	t.Fatal("condition not met in time")
+}
+
+func TestSearch(t *testing.T) {
+	var stored []string
+	var mu sync.Mutex
+	es := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "HEAD":
+			w.WriteHeader(200)
+		case r.Method == "PUT" && strings.Contains(r.URL.Path, "/_doc/"):
+			mu.Lock()
+			stored = append(stored, r.URL.Path)
+			mu.Unlock()
+			w.WriteHeader(201)
+		case strings.HasSuffix(r.URL.Path, "/_search"):
+			w.Write([]byte(`{"hits":{"hits":[{"_source":{"seq":2,"spokenAt":5},"fields":{"text":["kubelet restarts"]}}]}}`))
+		default:
+			w.WriteHeader(404)
+		}
+	}))
+	defer es.Close()
+
+	// Not configured: enabled=false, search is 501, nothing stored.
+	s := newServer("t")
+	ts := httptest.NewServer(s.routes())
+	defer ts.Close()
+	res, _ := http.Get(ts.URL + "/api/rooms/r/search")
+	var en map[string]bool
+	json.NewDecoder(res.Body).Decode(&en)
+	if en["enabled"] {
+		t.Fatal("search reported enabled without config")
+	}
+	res, _ = http.Get(ts.URL + "/api/rooms/r/search?q=x")
+	if res.StatusCode != http.StatusNotImplemented {
+		t.Fatalf("unconfigured search status %d", res.StatusCode)
+	}
+
+	// Configured: only final captions with save=true are stored; search returns hits.
+	s.search = &searcher{url: es.URL, key: "k", index: "captions", client: es.Client(), tel: s.tel}
+	post := func(body string) {
+		req, _ := http.NewRequest("POST", ts.URL+"/api/rooms/r/captions", strings.NewReader(body))
+		req.Header.Set("Authorization", "Bearer t")
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+	}
+	post(`{"seq":1,"text":"a","final":true}`)              // no opt-in
+	post(`{"seq":2,"text":"b","final":false,"save":true}`) // interim
+	post(`{"seq":3,"text":"c","final":true,"save":true}`)  // stored
+	waitFor(t, func() bool { mu.Lock(); defer mu.Unlock(); return len(stored) == 1 })
+	if stored[0] != "/captions/_doc/r-3" {
+		t.Fatalf("stored %v", stored)
+	}
+	res, _ = http.Get(ts.URL + "/api/rooms/r/search?q=restarts")
+	var out struct{ Hits []hit }
+	json.NewDecoder(res.Body).Decode(&out)
+	if len(out.Hits) != 1 || out.Hits[0].Text != "kubelet restarts" {
+		t.Fatalf("hits %+v", out.Hits)
+	}
 }

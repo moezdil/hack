@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strings"
 	"syscall"
 	"time"
 	"unicode/utf8"
@@ -32,6 +33,7 @@ const maxText = 500
 type server struct {
 	hub     *hub
 	tel     *telemetry
+	search  *searcher // nil when Elasticsearch is not configured
 	token   string
 	closing chan struct{} // closed on shutdown: streams send "bye" and return
 }
@@ -40,6 +42,7 @@ func (s *server) routes() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/rooms/{room}/captions", s.postCaption)
 	mux.HandleFunc("GET /api/rooms/{room}/stream", s.stream)
+	mux.HandleFunc("GET /api/rooms/{room}/search", s.searchHandler)
 	mux.HandleFunc("GET /s/{room}", s.page("web/speaker.html"))
 	mux.HandleFunc("GET /r/{room}", s.page("web/listener.html"))
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, _ *http.Request) {
@@ -116,11 +119,44 @@ func (s *server) postCaption(w http.ResponseWriter, r *http.Request) {
 	bspan.SetAttributes(attribute.Int("listeners", listeners), attribute.Int("dropped", dropped))
 	bspan.End()
 
+	if c.Final && c.Save && s.search != nil {
+		go s.search.store(room, c)
+	}
 	s.tel.captions.Add(ctx, 1, metric.WithAttributes(attribute.Bool("final", c.Final), attribute.String("status", "ok")))
 	slog.InfoContext(ctx, "caption", "room", room, "seq", c.Seq, "final", c.Final, "len", len(c.Text),
 		"listeners", listeners, "dropped", dropped)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]int{"listeners": listeners})
+}
+
+// searchHandler answers {"enabled":bool} without q, and the matching lines with q.
+func (s *server) searchHandler(w http.ResponseWriter, r *http.Request) {
+	room := r.PathValue("room")
+	if !roomRe.MatchString(room) {
+		http.Error(w, "bad room", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	if q == "" {
+		json.NewEncoder(w).Encode(map[string]bool{"enabled": s.search != nil})
+		return
+	}
+	if s.search == nil {
+		http.Error(w, "search not configured", http.StatusNotImplemented)
+		return
+	}
+	if utf8.RuneCountInString(q) > 200 {
+		http.Error(w, "query too long", http.StatusBadRequest)
+		return
+	}
+	hits, err := s.search.search(r.Context(), room, q)
+	if err != nil {
+		slog.WarnContext(r.Context(), "search", "room", room, "err", err)
+		http.Error(w, "search failed", http.StatusBadGateway)
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]any{"hits": hits})
 }
 
 func (s *server) stream(w http.ResponseWriter, r *http.Request) {
@@ -211,7 +247,8 @@ func main() {
 
 func newServer(token string) *server {
 	h := newHub()
-	return &server{hub: h, tel: newTelemetry(h), token: token, closing: make(chan struct{})}
+	tel := newTelemetry(h)
+	return &server{hub: h, tel: tel, search: newSearcher(tel), token: token, closing: make(chan struct{})}
 }
 
 func envOr(k, def string) string {
