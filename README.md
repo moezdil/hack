@@ -28,7 +28,9 @@ speech recognition in the browser -> POST /api/rooms/{room}/captions -> GET /api
 2. Ask the speaker (whoever has the token) to open https://hack.cnh.radarhq.io/s/demo in Chrome, paste the token, press **Start captions** and talk.
 3. Watch the lines appear. Tap **A+** for bigger text, **High contrast** to flip colors, **Pause scroll** to re-read.
 
-To run a talk of your own, pick any room name (letters, digits, dashes) and put the listener link or a QR code of it on your first slide: `qrencode -o qr.png https://hack.cnh.radarhq.io/r/<room>`.
+To run a talk of your own, pick any room name (letters, digits, dashes) and put the listener link or a QR code of it on your first slide: `qrencode -o qr.png https://hack.cnh.radarhq.io/r/<room>`. The one for room `talk` is in [docs/qr-talk.png](docs/qr-talk.png):
+
+<img src="docs/qr-talk.png" alt="QR code for https://hack.cnh.radarhq.io/r/talk" width="180">
 
 ## Run it yourself
 
