@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speaker</title>
+<style>
+  body { font: 18px/1.5 system-ui, sans-serif; margin: 1.5rem; color: #111; background: #fff; }
+  button { font: inherit; padding: .5rem 1rem; margin-right: .5rem; }
+  #status { margin: 1rem 0; font-weight: 600; }
+  #last { padding: 1rem; border: 1px solid #555; min-height: 3rem; }
+  label { display: block; margin: 1rem 0; }
+</style>
+</head>
+<body>
+<h1>Speaker: <span id="room"></span></h1>
+<label>Speaker token <input id="token" type="password" autocomplete="off"></label>
+<button id="start">Start</button>
+<button id="pause" disabled>Pause</button>
+<button id="stop" disabled>Stop</button>
+<p id="status" role="status">Stopped. Listeners: 0</p>
+<p>Last caption:</p>
+<div id="last"></div>
+<script>
+const room = location.pathname.split("/")[2];
+document.getElementById("room").textContent = room;
+const tokenEl = document.getElementById("token");
+tokenEl.value = sessionStorage.getItem("token") || "";
+const statusEl = document.getElementById("status");
+const lastEl = document.getElementById("last");
+const btn = id => document.getElementById(id);
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SR) statusEl.textContent = "This browser has no speech recognition. Use Chrome.";
+
+let rec, running = false, seq = 0, listeners = 0, restarts = 0;
+
+function setState(text) {
+  statusEl.textContent = `${text}. Listeners: ${listeners}. Restarts: ${restarts}`;
+}
+
+async function send(text, final) {
+  try {
+    const res = await fetch(`/api/rooms/${room}/captions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + tokenEl.value },
+      body: JSON.stringify({ seq: ++seq, text, final, spokenAt: Date.now() }),
+    });
+    if (res.status === 401) { setState("Wrong token"); return; }
+    if (res.ok) listeners = (await res.json()).listeners;
+  } catch (e) {
+    setState("Network error");
+  }
+}
+
+function start() {
+  if (!SR) return;
+  sessionStorage.setItem("token", tokenEl.value);
+  rec = new SR();
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.lang = "en-US";
+  rec.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      const text = r[0].transcript.trim().slice(0, 500);
+      if (!text) continue;
+      send(text, r.isFinal);
+      if (r.isFinal) lastEl.textContent = text;
+    }
+    setState("Live");
+  };
+  rec.onerror = e => setState("Recognition error: " + e.error);
+  // Chrome stops on its own after silence or about a minute; restart unless the speaker paused or stopped.
+  rec.onend = () => { if (running) { restarts++; rec.start(); } };
+  running = true;
+  rec.start();
+  btn("start").disabled = true; btn("pause").disabled = false; btn("stop").disabled = false;
+  setState("Live");
+}
+
+function halt(label) {
+  running = false;
+  if (rec) rec.stop();
+  btn("start").disabled = false; btn("pause").disabled = true; btn("stop").disabled = label === "Stopped";
+  btn("start").textContent = label === "Paused" ? "Resume" : "Start";
+  setState(label);
+}
+
+btn("start").onclick = start;
+btn("pause").onclick = () => halt("Paused");
+btn("stop").onclick = () => halt("Stopped");
+</script>
+</body>
+</html>

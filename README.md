@@ -10,7 +10,17 @@ Speaker page (Chrome speech recognition) -> Go server -> server-sent events -> l
 
 ## Setup
 
-Work in progress. Run and deploy instructions land with the server.
+Run locally (Go 1.22+):
+
+```sh
+SPEAKER_TOKEN=<pick-a-secret> go run .
+```
+
+- Speaker: open `http://localhost:8080/s/<room>` in Chrome, enter the token, press Start.
+- Listeners: open `http://localhost:8080/r/<room>` on any device.
+- Room names are `a-z`, `0-9` and `-`, up to 32 characters.
+
+Tests: `go test -race ./...`
 
 ## AI disclosure
 
