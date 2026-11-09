@@ -16,6 +16,8 @@ Real numbers only. Links go to the tools.
 - 15:40 Radar issues on `team-hack`: `demo-feeder` CronJob critical. Investigation started.
 - 15:43 Fix PR #17 merged. Agent0 report on the day's telemetry received.
 - 15:45 PR #18 from Agent0's finding (no Kubernetes attributes on telemetry) merged.
+- 15:48 Translation verified live: a listener on `?lang=tr` received "Her konuşma için canlı altyazılar, uygulama gerekmez." right after the original line.
+- 15:52 Room `demo` receiving captions again (Dash0). Listener page fixed for 390 px phones (PR #21).
 
 ## Radar: the real issue
 
@@ -23,7 +25,7 @@ Radar `issues` for `team-hack` showed two critical rows: `CronJob demo-feeder` w
 
 Radar's AI investigation (confidence 0.82) on the CronJob: root cause is `runAsNonRoot: true` without a numeric `runAsUser`; the `curlimages/curl` image's user is `curl_user`, which the kubelet cannot verify. Not a regression, present since the CronJob was created. The CoreDNS rewrite warning in the cluster was correctly ruled out as unrelated. Suggested fix: set a numeric `runAsUser`.
 
-Fix: PR #17 sets `runAsUser: 100`. Verification: the next scheduled Job completes and room `demo` starts receiving captions (see Dash0 below).
+Fix: PR #17 sets `runAsUser: 100`. Verified at 15:52: Radar events show `Created container: feeder` after the rollout, the old `CreateContainerConfigError` stopped at 22:45 UTC, and Dash0's `caption.delay{room="demo"}` started counting. Found in Radar, fixed through a Gitar-reviewed PR, confirmed in Dash0.
 
 Investigation link: https://app.radarhq.io/c/FzTAhw5Ukok/investigations/chat_vaXvy4SR40cPpTYd?org=org_NCJbssDGEBsU
 
