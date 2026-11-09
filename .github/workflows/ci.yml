@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      # The Go steps need at least one package; the bootstrap PR has none yet.
+      - name: gofmt
+        if: hashFiles('**/*.go') != ''
+        run: test -z "$(gofmt -l .)"
+      - if: hashFiles('**/*.go') != ''
+        run: go vet ./...
+      - if: hashFiles('**/*.go') != ''
+        run: go test -race ./...
