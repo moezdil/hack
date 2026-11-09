@@ -138,6 +138,22 @@ func TestPostCaptionValidation(t *testing.T) {
 	}
 }
 
+func TestPages(t *testing.T) {
+	s := &server{hub: newHub(), token: "t", closing: make(chan struct{})}
+	ts := httptest.NewServer(s.routes())
+	defer ts.Close()
+	for path, want := range map[string]int{"/": 200, "/s/talk": 200, "/r/talk": 200, "/r/Bad_Room": 400, "/nope": 404} {
+		res, err := http.Get(ts.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode != want {
+			t.Errorf("%s: status %d, want %d", path, res.StatusCode, want)
+		}
+	}
+}
+
 func waitFor(t *testing.T, ok func() bool) {
 	t.Helper()
 	for deadline := time.Now().Add(2 * time.Second); time.Now().Before(deadline); time.Sleep(10 * time.Millisecond) {
