@@ -362,8 +362,8 @@
    "y": 420,
    "width": 240,
    "height": 70,
-   "text": "GitHub\nPR -> Gitar review -> CI -> image",
-   "originalText": "GitHub\nPR -> Gitar review -> CI -> image",
+   "text": "GitHub\nPR, Gitar review, CI\nimage to GHCR",
+   "originalText": "GitHub\nPR, Gitar review, CI\nimage to GHCR",
    "fontSize": 15,
    "fontFamily": 3,
    "textAlign": "center",
@@ -511,7 +511,7 @@
    "id": "t12",
    "type": "text",
    "x": 720,
-   "y": 106,
+   "y": 86,
    "width": 160,
    "height": 20,
    "text": "SSE stream",
@@ -536,7 +536,7 @@
    "id": "a11",
    "type": "arrow",
    "x": 720,
-   "y": 120,
+   "y": 100,
    "width": 160,
    "height": 0,
    "points": [
@@ -583,11 +583,11 @@
    "id": "t14",
    "type": "text",
    "x": 720,
-   "y": 156,
+   "y": 136,
    "width": 160,
    "height": 20,
-   "text": "finals to translate",
-   "originalText": "finals to translate",
+   "text": "finals",
+   "originalText": "finals",
    "fontSize": 13,
    "fontFamily": 3,
    "textAlign": "center",
@@ -608,9 +608,9 @@
    "id": "a13",
    "type": "arrow",
    "x": 720,
-   "y": 170,
+   "y": 150,
    "width": 160,
-   "height": 120,
+   "height": 140,
    "points": [
     [
      0,
@@ -622,11 +622,11 @@
     ],
     [
      80,
-     120
+     140
     ],
     [
      160,
-     120
+     140
     ]
    ],
    "elbowed": true,
@@ -662,8 +662,8 @@
   {
    "id": "t16",
    "type": "text",
-   "x": 680,
-   "y": 186,
+   "x": 720,
+   "y": 166,
    "width": 160,
    "height": 20,
    "text": "opt-in finals",
@@ -687,22 +687,26 @@
   {
    "id": "a15",
    "type": "arrow",
-   "x": 680,
-   "y": 200,
-   "width": 200,
-   "height": 210,
+   "x": 720,
+   "y": 180,
+   "width": 160,
+   "height": 230,
    "points": [
     [
      0,
      0
     ],
     [
-     0,
-     210
+     120,
+     0
     ],
     [
-     200,
-     210
+     120,
+     230
+    ],
+    [
+     160,
+     230
     ]
    ],
    "elbowed": true,
