@@ -6,6 +6,19 @@
 
 **Live:** https://hack.cnh.radarhq.io · **Try it:** open [/r/demo](https://hack.cnh.radarhq.io/r/demo) on your phone, a demo room gets a new line every minute.
 
+## For judges, in 2 minutes
+
+| | |
+|---|---|
+| Demo video (2 min, captioned) | https://drive.google.com/file/d/1J9-sOIU0yhy1xW2AczknCf6Umv9Ss9O6/view |
+| Live listener page | https://hack.cnh.radarhq.io/r/demo |
+| The day's real incident, PR by PR | [DEMO.md](DEMO.md) |
+| Radar AI investigation (root cause of the feeder failure) | [open in Radar Cloud](https://app.radarhq.io/c/FzTAhw5Ukok/investigations/chat_vaXvy4SR40cPpTYd?org=org_NCJbssDGEBsU) |
+| Dash0 Agent0 report on the telemetry | [open in Dash0](https://app.dash0.com/goto/agent0?thread_id=e7acc9d2-2d3c-443c-b591-63d311725eae&dataset=default&org=6ebde1cf-921d-4f8f-a703-467c146f1c63) |
+| Pull requests (28, all reviewed by Gitar) | https://github.com/moezdil/hack/pulls?q=is%3Apr |
+
+Sponsor tools, each doing real work: **Gitar** reviews every PR against `.gitar/review/`; **Dash0** gets traces, metrics, logs, an SLO and an Agent0 investigation; **Radar** runs the cluster, Argo CD and the AI investigation; **Elasticsearch** powers search by meaning; **OpenAI** translates.
+
 ## Why
 
 Most sessions have no captions. Deaf and hard-of-hearing attendees, non-native speakers and the back row lose the talk. Human captioning is rare and expensive. Readalong gives any talk live captions in under a minute, for about nothing per talk.
